@@ -60,9 +60,9 @@
   </properties>
 
   <scm>
-    <connection>scm:svn:http://svn.apache.org/repos/asf/sling/trunk/launchpad/integration-tests</connection>
-    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/sling/trunk/launchpad/integration-tests</developerConnection>
-    <url>http://svn.apache.org/viewvc/sling/trunk/launchpad/integration-tests</url>
+    <connection>scm:git:https://gitbox.apache.org/repos/asf/sling-org-apache-sling-launchpad-integration-tests.git</conncetion>
+    <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/sling-org-apache-sling-launchpad-integration-tests.git</developerConnection>
+    <url>https://gitbox.apache.org/repos/asf?p=sling-org-apache-sling-launchpad-integration-tests.git</url>
   </scm>
 
   <build>
