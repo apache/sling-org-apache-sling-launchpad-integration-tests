@@ -296,7 +296,7 @@
     <dependency>
       <groupId>org.apache.sling</groupId>
       <artifactId>org.apache.sling.junit.teleporter</artifactId>
-      <version>1.0.16</version>
+      <version>1.0.17-SNAPSHOT</version>
       <exclusions>
       	<exclusion>
       		<groupId>commons-io</groupId>
