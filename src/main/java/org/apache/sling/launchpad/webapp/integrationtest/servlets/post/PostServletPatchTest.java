@@ -66,6 +66,43 @@ public class PostServletPatchTest extends HttpTestBase {
         assertJavascript("delta", content, "out.println(data.prop[4])");
     }
 
+    public void testEmptyPatch() throws Exception {
+        final NameValuePairList props = new NameValuePairList();
+
+        // 1. create multi-value property, adding and removing a value via Patch
+        //    to intentionally create an empty result
+        props.add("prop@TypeHint", "String[]");
+        props.add("prop@Patch", "true");
+        props.add("prop", "+dummy");
+        props.add("prop", "-dummy");
+
+        String location = testClient.createNode(postUrl + SlingPostConstants.DEFAULT_CREATE_SUFFIX,
+                props, null, false);
+        props.clear();
+
+        String content = getContent(location + ".json", CONTENT_TYPE_JSON);
+        assertJavascript("true", content, "out.println(data.prop.length == 0)");
+    }
+
+    public void testReversedEmptyPatch() throws Exception {
+        final NameValuePairList props = new NameValuePairList();
+
+        // 1. create multi-value property, removing and adding a value via Patch
+        //    to verify that the order of patches is significant
+        props.add("prop@TypeHint", "String[]");
+        props.add("prop@Patch", "true");
+        props.add("prop", "-dummy");
+        props.add("prop", "+dummy");
+
+        String location = testClient.createNode(postUrl + SlingPostConstants.DEFAULT_CREATE_SUFFIX,
+                props, null, false);
+        props.clear();
+
+        String content = getContent(location + ".json", CONTENT_TYPE_JSON);
+        assertJavascript("true", content, "out.println(data.prop.length == 1)");
+        assertJavascript("dummy", content, "out.println(data.prop[0])");
+    }
+
     public void testInvalidPatch() throws Exception {
         final NameValuePairList props = new NameValuePairList();
         
