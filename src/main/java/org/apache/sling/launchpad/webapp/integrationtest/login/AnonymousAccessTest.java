@@ -36,7 +36,7 @@ public class AnonymousAccessTest extends HttpTestBase {
         super.setUp();
         
         // create test node under a unique path
-        final String url = HTTP_BASE_URL + "/" + getClass().getSimpleName() + "/" + System.currentTimeMillis() + SlingPostConstants.DEFAULT_CREATE_SUFFIX;
+        final String url = HTTP_BASE_URL + "/content/" + getClass().getSimpleName() + "/" + System.currentTimeMillis() + SlingPostConstants.DEFAULT_CREATE_SUFFIX;
         testText = "Test text " + System.currentTimeMillis();
         final NameValuePairList list = new NameValuePairList();
         list.add("text", testText);
