@@ -52,7 +52,7 @@ public class PropertyRenderingTest extends RenderingTestBase {
         slingResourceType = getClass().getName();
 
         // create the test node, under a path that's specific to this class to allow collisions
-        final String url = HTTP_BASE_URL + "/" + getClass().getSimpleName() + "/" + System.currentTimeMillis() + SlingPostConstants.DEFAULT_CREATE_SUFFIX;
+        final String url = HTTP_BASE_URL + "/content/" + getClass().getSimpleName() + "/" + System.currentTimeMillis() + SlingPostConstants.DEFAULT_CREATE_SUFFIX;
 
         NameValuePairList list = new NameValuePairList();
         list.add("sling:resourceType", slingResourceType);
@@ -110,7 +110,7 @@ public class PropertyRenderingTest extends RenderingTestBase {
 
     public void testMultiValuedTextNoExt() throws IOException {
         // multi-valued properties can't be adapted to a stream, so this returns an error
-        assertHttpStatus(displayUrl + "/multiText/", 403);
+        assertHttpStatus(displayUrl + "/multiText", 403);
     }
 
     public void testResourceTypeNoExt() throws IOException {
