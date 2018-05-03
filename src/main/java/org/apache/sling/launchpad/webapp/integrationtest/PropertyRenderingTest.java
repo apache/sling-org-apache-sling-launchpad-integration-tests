@@ -110,7 +110,7 @@ public class PropertyRenderingTest extends RenderingTestBase {
 
     public void testMultiValuedTextNoExt() throws IOException {
         // multi-valued properties can't be adapted to a stream, so this returns an error
-        assertHttpStatus(displayUrl + "/multiText", 403);
+        assertHttpStatus(displayUrl + "/multiText/", 403);
     }
 
     public void testResourceTypeNoExt() throws IOException {
