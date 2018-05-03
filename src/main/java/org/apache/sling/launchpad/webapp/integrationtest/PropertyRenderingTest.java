@@ -52,7 +52,7 @@ public class PropertyRenderingTest extends RenderingTestBase {
         slingResourceType = getClass().getName();
 
         // create the test node, under a path that's specific to this class to allow collisions
-        final String url = HTTP_BASE_URL + "/content/" + getClass().getSimpleName() + "/" + System.currentTimeMillis() + SlingPostConstants.DEFAULT_CREATE_SUFFIX;
+        final String url = HTTP_BASE_URL + "/ANON_CAN_READ/" + getClass().getSimpleName() + "/" + System.currentTimeMillis() + SlingPostConstants.DEFAULT_CREATE_SUFFIX;
 
         NameValuePairList list = new NameValuePairList();
         list.add("sling:resourceType", slingResourceType);

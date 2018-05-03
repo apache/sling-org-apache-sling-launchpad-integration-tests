@@ -45,7 +45,7 @@ public class AnonymousAccessTest {
      @Parameterized.Parameters(name="{0}")
     public static Object[] data() {
         final Object [] result = new Object[] {
-            new Object[] { "/content", true },
+            new Object[] { "/ANON_CAN_READ", true },
             new Object[] { "", false }
         };
         return result;
@@ -64,11 +64,15 @@ public class AnonymousAccessTest {
         H.setUp();
         
         // create test node under a unique path
-        final String url = H.HTTP_BASE_URL + basePath + "/" + getClass().getSimpleName() + "/" + System.currentTimeMillis() + SlingPostConstants.DEFAULT_CREATE_SUFFIX;
-        testText = "Test text " + UUID.randomUUID();
+        final String id = UUID.randomUUID().toString();
+        final String url = H.HTTP_BASE_URL + basePath + "/" + getClass().getSimpleName() + "/" + id + SlingPostConstants.DEFAULT_CREATE_SUFFIX;
+        testText = "Test text " + id;
         final NameValuePairList list = new NameValuePairList();
         list.add("text", testText);
         displayUrl = H.getTestClient().createNode(url, list, null, true);
+        assertTrue(
+                "Expecting base path (" + basePath + ") in test node URL (" + displayUrl + ") for POST URL " + url,
+                displayUrl.contains(basePath));
     }
 
     @After
