@@ -17,56 +17,98 @@
 package org.apache.sling.launchpad.webapp.integrationtest.login;
 
 import java.net.URL;
-
+import java.util.UUID;
+import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.assertTrue;
 import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
-import org.apache.sling.commons.testing.integration.HttpTestBase;
+import org.apache.sling.commons.testing.integration.HttpTest;
 import org.apache.sling.commons.testing.integration.NameValuePairList;
 import org.apache.sling.servlets.post.SlingPostConstants;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
-/** Verify that anonymous has read access via HTTP */
-public class AnonymousAccessTest extends HttpTestBase {
+/** Verify that anonymous has read access via HTTP, but only
+ *  under /content as per SLING-6130
+ */
+@RunWith(Parameterized.class)
+public class AnonymousAccessTest {
 
+    private final HttpTest H = new HttpTest();
     private String displayUrl;
     private String testText;
     
-    @Override
+     @Parameterized.Parameters(name="{0}")
+    public static Object[] data() {
+        final Object [] result = new Object[] {
+            new Object[] { "/content", true },
+            new Object[] { "", false }
+        };
+        return result;
+    }
+
+    private final String basePath;
+    private final boolean anonymousAccessAllowed;
+
+    public AnonymousAccessTest(String basePath, boolean anonymousAccessAllowed) {
+        this.basePath = basePath;
+        this.anonymousAccessAllowed = anonymousAccessAllowed;
+    }
+
+   @Before
     public void setUp() throws Exception {
-        super.setUp();
+        H.setUp();
         
         // create test node under a unique path
-        final String url = HTTP_BASE_URL + "/content/" + getClass().getSimpleName() + "/" + System.currentTimeMillis() + SlingPostConstants.DEFAULT_CREATE_SUFFIX;
-        testText = "Test text " + System.currentTimeMillis();
+        final String url = H.HTTP_BASE_URL + basePath + "/" + getClass().getSimpleName() + "/" + System.currentTimeMillis() + SlingPostConstants.DEFAULT_CREATE_SUFFIX;
+        testText = "Test text " + UUID.randomUUID();
         final NameValuePairList list = new NameValuePairList();
         list.add("text", testText);
-        displayUrl = testClient.createNode(url, list, null, true);
+        displayUrl = H.getTestClient().createNode(url, list, null, true);
+    }
+
+    @After
+    public void cleanup() throws Exception {
+        H.getTestClient().delete(displayUrl);
+        H.tearDown();
     }
     
-    private void assertContent() throws Exception {
-        final String content = getContent(displayUrl + ".txt", CONTENT_TYPE_PLAIN);
-        assertTrue(content.contains(testText));
+    private void assertContent(String info) throws Exception {
+        final String content = H.getContent(displayUrl + ".txt", H.CONTENT_TYPE_PLAIN);
+        assertTrue(info, content.contains(testText));
     }
     
+    @Test
     public void testAnonymousContent() throws Exception {
         // disable credentials -> anonymous session
-        final URL url = new URL(HTTP_BASE_URL);
+        final URL url = new URL(H.HTTP_BASE_URL);
         final AuthScope scope = new AuthScope(url.getHost(), url.getPort(), AuthScope.ANY_REALM);
-        httpClient.getParams().setAuthenticationPreemptive(false);
-        httpClient.getState().setCredentials(scope, null);
+        H.getHttpClient().getParams().setAuthenticationPreemptive(false);
+        H.getHttpClient().getState().setCredentials(scope, null);
         
         try {
-            assertContent();
+            if(anonymousAccessAllowed) {
+                assertContent("Expecting conent when testing under anonymous access subtree");
+            } else {
+                assertEquals(
+                    "Expecting status 404 when testing outside of anonymous access subtree",
+                    404, H.getTestClient().get(displayUrl));
+            }
         } finally {
             // re-enable credentials -> admin session
-            httpClient.getParams().setAuthenticationPreemptive(true);
+            H.getHttpClient().getParams().setAuthenticationPreemptive(true);
             Credentials defaultcreds = new UsernamePasswordCredentials("admin", "admin");
-            httpClient.getState().setCredentials(scope, defaultcreds);
+            H.getHttpClient().getState().setCredentials(scope, defaultcreds);
         }
     }
     
+    @Test
     public void testAdminContent() throws Exception {
         // HTTP test client has credentials by default
-        assertContent();
+        assertContent("Expecting content when testing with admin credentials");
     }
 }
