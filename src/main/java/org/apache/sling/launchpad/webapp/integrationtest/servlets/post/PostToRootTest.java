@@ -28,11 +28,6 @@ public class PostToRootTest extends HttpTestBase {
 			url += "/";
 		}
 
-                // Recent changes cause / to be "magic" at the end of an URL,
-                // we need an extension to be able to set a property on / instead
-                // of creating content under it
-                url += ".json";
-
                 final PostMethod post = new PostMethod(url);
 		final String name = getClass().getSimpleName();
 		final String value = getClass().getSimpleName() + System.currentTimeMillis();
@@ -41,7 +36,7 @@ public class PostToRootTest extends HttpTestBase {
 		final int status = httpClient.executeMethod(post);
 		assertEquals(200, status);
 		
-		final String json = getContent(url, CONTENT_TYPE_JSON);
+		final String json = getContent(url + ".json", CONTENT_TYPE_JSON);
 		assertJavascript(value, json, "out.print(data." + name + ")");
 	}
 }
