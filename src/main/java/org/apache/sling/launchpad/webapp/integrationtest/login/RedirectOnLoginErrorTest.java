@@ -25,6 +25,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.NameValuePair;
+import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.sling.commons.testing.integration.HttpTestBase;
 
@@ -100,6 +101,13 @@ public class RedirectOnLoginErrorTest extends HttpTestBase {
      */
     public void testGetDefaultLoginPage() throws Exception {
         final String loginPageUrl = String.format("%s/system/sling/login", HTTP_BASE_URL);
-        assertHttpStatus(loginPageUrl, HttpServletResponse.SC_OK);
+        final GetMethod get = new GetMethod(loginPageUrl);
+        get.setFollowRedirects(false);
+        get.setDoAuthentication(false);
+        final int status = httpClient.executeMethod(get);
+        final int family = status / 10;
+        if(family != 20 && family != 30) {
+            fail("Expected 20x or 30x status, got " + status + " at " + loginPageUrl);
+        }
     }
 }
