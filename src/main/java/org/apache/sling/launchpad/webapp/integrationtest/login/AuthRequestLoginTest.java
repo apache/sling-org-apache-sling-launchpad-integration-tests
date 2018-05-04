@@ -41,12 +41,12 @@ public class AuthRequestLoginTest extends HttpTestBase {
             assertJavascript("anonymous", content, "out.println(data.userID)");
     	}
     	
-    	// root must return 20x or 30x
+        // root must return 20x, 30x or 40x
         final GetMethod get = new GetMethod(HTTP_BASE_URL + "/");
         final int status = httpClient.executeMethod(get);
-        final int status10 = status / 10;
-        if(status10 != 20 && status10 != 30) {
-        	fail("Expected 20x or 30x status, got " + status);
+        final int family = status / 10;
+        if(family < 20 || family > 40) {
+            fail("Expected 20x, 30x or 40x status at / with no credentials, got " + status);
         }
         
         // root with sling:authRequestLogin=true must return 401
