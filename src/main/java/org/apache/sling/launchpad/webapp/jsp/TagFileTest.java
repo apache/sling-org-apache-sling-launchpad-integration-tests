@@ -20,44 +20,72 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Collections;
+import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.assertTrue;
+import org.apache.sling.commons.testing.integration.HttpTest;
+import org.apache.sling.commons.testing.junit.Retry;
+import org.apache.sling.commons.testing.junit.RetryRule;
 
-import org.apache.sling.commons.testing.integration.HttpTestBase;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
 
 /**
  * Verifies that JSP Tag files function correctly
  *
  */
-public class TagFileTest extends HttpTestBase {
+public class TagFileTest {
+
+    private final HttpTest H = new HttpTest();
+
+    private static final String TAGLIB_URI= "https://sling.apache.org/tags/test/1.0";
     
     private static String TAG_FILE_SCRIPT = 
-            "<%@ taglib prefix=\"t\" uri=\"https://sling.apache.org/tags/test/1.0\" %>\n" + 
+            "<%@ taglib prefix=\"t\" uri=\"" + TAGLIB_URI + "\" %>\n" +
             "\n" + 
             "<t:test/>";
+
+    @Rule
+    public RetryRule retryRule = new RetryRule();
+
+    @Before
+    public void setup() throws Exception {
+        H.setUp();
+    }
+
+    private void assertTaglibInstalled() throws IOException {
+        final String content = H.getContent(H.HTTP_BASE_URL + "/system/console/status-jsptaglibs", H.CONTENT_TYPE_DONTCARE);
+        assertTrue("Expecting taglib to be registered: " + TAGLIB_URI, content.contains(TAGLIB_URI));
+    }
     
     /**
      * Tests a tag file packaged in a jar file is properly executed
      */
+    @Test
+    @Retry(intervalMsec = 250, timeoutMsec = 5000)
     public void testTagFileDeployedInBundle() throws IOException {
         
-        if ( !isBundleVersionAtLeast("org.apache.sling.scripting.jsp", "2.3.1") ) {
+        assertTaglibInstalled();
+
+        if ( !H.isBundleVersionAtLeast("org.apache.sling.scripting.jsp", "2.3.1") ) {
             System.out.println("Bundle version is too old, skipping");
             return;
         }
         
-        testClient.createNode(HTTP_BASE_URL + "/content/tagtest", Collections.singletonMap("sling:resourceType", "sling/test/tagfile"));
-        testClient.mkdirs(HTTP_BASE_URL, "/apps/sling/test/tagfile");
-        testClient.upload(HTTP_BASE_URL + "/apps/sling/test/tagfile/html.jsp", new ByteArrayInputStream(TAG_FILE_SCRIPT.getBytes(Charset.forName("UTF-8"))));
+        H.getTestClient().createNode(H.HTTP_BASE_URL + "/content/tagtest", Collections.singletonMap("sling:resourceType", "sling/test/tagfile"));
+        H.getTestClient().mkdirs(H.HTTP_BASE_URL, "/apps/sling/test/tagfile");
+        H.getTestClient().upload(H.HTTP_BASE_URL + "/apps/sling/test/tagfile/html.jsp", new ByteArrayInputStream(TAG_FILE_SCRIPT.getBytes(Charset.forName("UTF-8"))));
         
-        String content = getContent(HTTP_BASE_URL + "/content/tagtest.html", CONTENT_TYPE_DONTCARE, null, 200);
+        String content = H.getContent(H.HTTP_BASE_URL + "/content/tagtest.html", H.CONTENT_TYPE_DONTCARE, null, 200);
         assertEquals("Incorrect output from rendering script", "TEST OUTPUT", content.trim());
     }
     
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
-        
-        testClient.delete(HTTP_BASE_URL + "/content/tagtest");
-        testClient.delete(HTTP_BASE_URL + "/apps/sling/test/tagfile");
+    @After
+    public void tearDown() throws Exception {
+        H.getTestClient().delete(H.HTTP_BASE_URL + "/content/tagtest");
+        H.getTestClient().delete(H.HTTP_BASE_URL + "/apps/sling/test/tagfile");
+        H.tearDown();
     }
 
 }
