@@ -2352,7 +2352,7 @@ public class ResourceResolverGeneralTest {
             path = ResourceUtil.normalize(ResourceUtil.getParent(rootPath)
                     + "/" + alias+"/child");
             mapped = resResolver.map(child.getPath());
-            assertEquals(path, mapped);
+            assertEquals("Incorrectly mapped path for node at " + child.getPath(), path, mapped);
         } finally {
             rootNode.getProperty("sling:alias").remove();
             if ( rootNode.hasNode("child") ) {
@@ -2386,7 +2386,7 @@ public class ResourceResolverGeneralTest {
             path = ResourceUtil.normalize(ResourceUtil.getParent(rootPath)
                     + "/" + alias+"/_jcr_content/child");
             mapped = resResolver.map(child.getPath());
-            assertEquals(path, mapped);
+            assertEquals("Incorrectly mapped path for node at " + child.getPath(), path, mapped);
         } finally {
             content.remove();
             session.save();
