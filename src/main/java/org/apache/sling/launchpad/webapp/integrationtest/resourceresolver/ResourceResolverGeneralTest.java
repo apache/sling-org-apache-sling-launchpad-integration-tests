@@ -39,7 +39,6 @@ import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.apache.sling.api.resource.ResourceUtil;
 import org.apache.sling.api.resource.ValueMap;
 import org.apache.sling.jcr.base.util.AccessControlUtil;
-import org.apache.sling.junit.annotations.SlingAnnotationsTestRunner;
 import org.apache.sling.junit.rules.TeleporterRule;
 import org.apache.sling.launchpad.testservices.events.EventsCounter;
 import org.apache.sling.launchpad.testservices.exported.FakeSlingHttpServletRequest;
@@ -58,7 +57,6 @@ import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@RunWith(SlingAnnotationsTestRunner.class)
 public class ResourceResolverGeneralTest {
 
     public static final String PROP_REDIRECT_INTERNAL = "sling:internalRedirect";
