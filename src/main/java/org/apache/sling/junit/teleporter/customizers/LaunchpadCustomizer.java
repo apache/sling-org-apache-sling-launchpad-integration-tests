@@ -53,6 +53,12 @@ public class LaunchpadCustomizer implements TeleporterRule.Customizer {
         cst.setBaseUrl(HttpTest.HTTP_BASE_URL);
         cst.setTestReadyTimeoutSeconds(testReadyTimeout);
         cst.includeDependencyPrefix("org.apache.sling.launchpad.webapp");
+        
+        // Get the testservices classes from that bundle, importing them
+        final String eventsPackage = org.apache.sling.launchpad.testservices.events.EventsCounter.class.getPackage().getName();
+        cst.includeDependencyPrefix("org.apache.sling.launchpad.testservices");
+        cst.excludeDependencyPrefix(eventsPackage);
+        
         cst.setServerCredentials("admin", "admin");
     }
     
