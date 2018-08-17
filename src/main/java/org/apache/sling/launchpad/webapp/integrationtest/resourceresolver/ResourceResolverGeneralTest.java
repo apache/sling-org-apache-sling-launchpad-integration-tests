@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
@@ -61,6 +62,8 @@ public class ResourceResolverGeneralTest {
     public static final String PROP_REDIRECT_INTERNAL = "sling:internalRedirect";
     public static final String PROP_REDIRECT_EXTERNAL = "sling:redirect";
     public static final String MAPPING_EVENT_TOPIC = "org/apache/sling/api/resource/ResourceResolverMapping/CHANGED";
+    private static final String CONTENT = "content";
+    private static final String ABS_CONTENT = "/" + CONTENT;
 
     private static final Logger logger = LoggerFactory.getLogger(ResourceResolverGeneralTest.class);
     private static ResourceResolver resResolver;
@@ -68,6 +71,7 @@ public class ResourceResolverGeneralTest {
     private String rootPath;
     private Node rootNode;
     private Node mapRoot;
+    private Node savedContentNode;
     private String [] vanity;
     private static List<String> toDelete = new ArrayList<String>();
     private MappingsFacade mappingsFacade;
@@ -104,9 +108,19 @@ public class ResourceResolverGeneralTest {
         session = resResolver.adaptTo(Session.class);
         mappingsFacade = new MappingsFacade(eventsCounter);
 
+        // Save the /content node to restore it after our tests
+        savedContentNode = null;
+        if(session.nodeExists(ABS_CONTENT)) {
+            final String savePath = "/" + getClass().getSimpleName() + "-save-" + UUID.randomUUID();
+            savedContentNode = session.getNode(ABS_CONTENT);
+            session.move(ABS_CONTENT, savePath);
+            session.save();
+            savedContentNode = session.getNode(savePath);
+        }
+
         // Do the mappings setup only once, and clean it up
         // after all tests
-        rootNode = maybeCreateNode(session.getRootNode(), "content", "nt:unstructured");
+        rootNode = maybeCreateNode(session.getRootNode(), CONTENT, "nt:unstructured");
         rootPath = rootNode.getPath();
         session.save();
         if(toDelete.isEmpty()) {
@@ -145,7 +159,8 @@ public class ResourceResolverGeneralTest {
     }
 
     @After
-    public void deleteTestNodes() throws Exception {
+    public void cleanup() throws Exception {
+
         logger.debug("{} test done, deleting test nodes", getClass().getSimpleName());
         final ResourceResolver resolver = teleporter.getService(ResourceResolverFactory.class).getAdministrativeResourceResolver(null);
         final Session session = resolver.adaptTo(Session.class);
@@ -157,6 +172,13 @@ public class ResourceResolverGeneralTest {
                 }
             }
             toDelete.clear();
+
+            if(savedContentNode != null) {
+                logger.debug("Restoring {} node from {}", ABS_CONTENT, savedContentNode.getPath());
+                session.move(savedContentNode.getPath(), ABS_CONTENT);
+                savedContentNode = null;
+            }
+
             session.save();
         } finally {
             session.logout();
