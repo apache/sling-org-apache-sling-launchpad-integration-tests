@@ -18,6 +18,7 @@ package org.apache.sling.launchpad.webapp.integrationtest.accessManager;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -26,6 +27,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
+import javax.json.JsonArray;
 import javax.json.JsonException;
 import javax.json.JsonObject;
 import javax.servlet.http.HttpServletResponse;
@@ -44,6 +46,7 @@ public class AccessPrivilegesInfoTest {
     private static Random random = new Random(System.currentTimeMillis());
 	
 	String testUserId = null;
+	String testUserId2 = null;
 	String testGroupId = null;
 	String testFolderUrl = null;
     Set<String> toDelete = new HashSet<String>();
@@ -84,6 +87,12 @@ public class AccessPrivilegesInfoTest {
 		if (testUserId != null) {
 			//remove the test user if it exists.
 			String postUrl = HttpTest.HTTP_BASE_URL + "/system/userManager/user/" + testUserId + ".delete.html";
+			List<NameValuePair> postParams = new ArrayList<NameValuePair>();
+			H.assertAuthenticatedPostStatus(creds, postUrl, HttpServletResponse.SC_OK, postParams, null);
+		}
+		if (testUserId2 != null) {
+			//remove the test user if it exists.
+			String postUrl = HttpTest.HTTP_BASE_URL + "/system/userManager/user/" + testUserId2 + ".delete.html";
 			List<NameValuePair> postParams = new ArrayList<NameValuePair>();
 			H.assertAuthenticatedPostStatus(creds, postUrl, HttpServletResponse.SC_OK, postParams, null);
 		}
@@ -331,4 +340,181 @@ public class AccessPrivilegesInfoTest {
 		JsonObject jsonObj = JsonUtil.parseObject(json);
 		assertEquals(true, jsonObj.getBoolean("canDelete"));
 	}
+	
+	/**
+	 * Test for SLING-2600, PrivilegesInfo#getDeclaredAccessRights returns incorrect information
+	 */
+	@Test 
+	public void testDeclaredAclForUser() throws IOException, JsonException {
+		testUserId = H.createTestUser();
+		testUserId2 = H.createTestUser();
+
+		testFolderUrl = H.createTestFolder("{ \"jcr:primaryType\": \"nt:unstructured\", \"propOne\" : \"propOneValue\", \"child\" : { \"childPropOne\" : true } }");
+		
+        String postUrl = testFolderUrl + ".modifyAce.html";
+
+        //1. create an initial set of privileges
+		List<NameValuePair> postParams = new ArrayList<NameValuePair>();
+		postParams.add(new NameValuePair("principalId", testUserId));
+		postParams.add(new NameValuePair("privilege@jcr:write", "granted"));
+		
+		Credentials creds = new UsernamePasswordCredentials("admin", "admin");
+		H.assertAuthenticatedPostStatus(creds, postUrl, HttpServletResponse.SC_OK, postParams, null);
+		
+		postParams = new ArrayList<NameValuePair>();
+		postParams.add(new NameValuePair("principalId", testUserId2));
+		postParams.add(new NameValuePair("privilege@jcr:write", "granted"));
+		
+		H.assertAuthenticatedPostStatus(creds, postUrl, HttpServletResponse.SC_OK, postParams, null);
+		
+		postParams = new ArrayList<NameValuePair>();
+		postParams.add(new NameValuePair("principalId", testUserId2));
+		postParams.add(new NameValuePair("privilege@jcr:lockManagement", "granted"));
+		
+        postUrl = testFolderUrl + "/child.modifyAce.html";
+		H.assertAuthenticatedPostStatus(creds, postUrl, HttpServletResponse.SC_OK, postParams, null);
+
+		
+		//fetch the JSON for the eacl to verify the settings.
+		String getUrl = testFolderUrl + "/child.privileges-info.json";
+		Credentials testUserCreds = new UsernamePasswordCredentials("admin", "admin");
+		String json = H.getAuthenticatedContent(testUserCreds, getUrl, HttpTest.CONTENT_TYPE_JSON, null, HttpServletResponse.SC_OK);
+		assertNotNull(json);
+		JsonObject jsonObject = JsonUtil.parseObject(json);
+		jsonObject = jsonObject.getJsonObject("declaredAccessRights");
+		
+		assertNull(jsonObject.get(testUserId));
+
+		JsonObject aceObject2 = jsonObject.getJsonObject(testUserId2);
+		assertNotNull(aceObject2);
+
+		JsonArray grantedArray2 = aceObject2.getJsonArray("granted");
+		assertNotNull(grantedArray2);
+		assertEquals(1, grantedArray2.size());
+		Set<String> grantedPrivilegeNames2 = new HashSet<String>();
+		for (int i=0; i < grantedArray2.size(); i++) {
+			grantedPrivilegeNames2.add(grantedArray2.getString(i));
+		}
+		H.assertPrivilege(grantedPrivilegeNames2, true, "jcr:lockManagement");
+
+		JsonArray deniedArray2 = aceObject2.getJsonArray("denied");
+		assertNotNull(deniedArray2);
+		assertEquals(0, deniedArray2.size());
+
+	
+		getUrl = testFolderUrl + ".privileges-info.json";
+		json = H.getAuthenticatedContent(testUserCreds, getUrl, HttpTest.CONTENT_TYPE_JSON, null, HttpServletResponse.SC_OK);
+		assertNotNull(json);
+		jsonObject = JsonUtil.parseObject(json);
+		jsonObject = jsonObject.getJsonObject("declaredAccessRights");
+		
+		JsonObject aceObject = jsonObject.getJsonObject(testUserId);
+		assertNotNull(aceObject);
+
+		JsonArray grantedArray = aceObject.getJsonArray("granted");
+		assertNotNull(grantedArray);
+		assertEquals(1, grantedArray.size());
+		Set<String> grantedPrivilegeNames = new HashSet<String>();
+		for (int i=0; i < grantedArray.size(); i++) {
+			grantedPrivilegeNames.add(grantedArray.getString(i));
+		}
+		H.assertPrivilege(grantedPrivilegeNames,true,"jcr:write");
+
+		JsonArray deniedArray = aceObject.getJsonArray("denied");
+		assertNotNull(deniedArray);
+		assertEquals(0, deniedArray.size());
+
+		aceObject2 = jsonObject.getJsonObject(testUserId2);
+		assertNotNull(aceObject2);
+
+		grantedArray2 = aceObject2.getJsonArray("granted");
+		assertNotNull(grantedArray2);
+		assertEquals(1, grantedArray2.size());
+		grantedPrivilegeNames2 = new HashSet<String>();
+		for (int i=0; i < grantedArray2.size(); i++) {
+			grantedPrivilegeNames2.add(grantedArray2.getString(i));
+		}
+		H.assertPrivilege(grantedPrivilegeNames2, true, "jcr:write");
+
+		deniedArray2 = aceObject2.getJsonArray("denied");
+		assertNotNull(deniedArray2);
+		assertEquals(0, deniedArray2.size());
+	}
+	
+	/**
+	 * Test for SLING-2600, PrivilegesInfo#getEffectiveAccessRights returns incorrect information
+	 */
+	@Test 
+	public void testEffectiveAclForUser() throws IOException, JsonException {
+		testUserId = H.createTestUser();
+		testUserId2 = H.createTestUser();
+
+		testFolderUrl = H.createTestFolder("{ \"jcr:primaryType\": \"nt:unstructured\", \"propOne\" : \"propOneValue\", \"child\" : { \"childPropOne\" : true } }");
+		
+        String postUrl = testFolderUrl + ".modifyAce.html";
+
+        //1. create an initial set of privileges
+		List<NameValuePair> postParams = new ArrayList<NameValuePair>();
+		postParams.add(new NameValuePair("principalId", testUserId));
+		postParams.add(new NameValuePair("privilege@jcr:write", "granted"));
+		
+		Credentials creds = new UsernamePasswordCredentials("admin", "admin");
+		H.assertAuthenticatedPostStatus(creds, postUrl, HttpServletResponse.SC_OK, postParams, null);
+		
+		postParams = new ArrayList<NameValuePair>();
+		postParams.add(new NameValuePair("principalId", testUserId2));
+		postParams.add(new NameValuePair("privilege@jcr:write", "granted"));
+		
+		H.assertAuthenticatedPostStatus(creds, postUrl, HttpServletResponse.SC_OK, postParams, null);
+		
+		postParams = new ArrayList<NameValuePair>();
+		postParams.add(new NameValuePair("principalId", testUserId2));
+		postParams.add(new NameValuePair("privilege@jcr:lockManagement", "granted"));
+		
+        postUrl = testFolderUrl + "/child.modifyAce.html";
+		H.assertAuthenticatedPostStatus(creds, postUrl, HttpServletResponse.SC_OK, postParams, null);
+
+		
+		//fetch the JSON for the eacl to verify the settings.
+		String getUrl = testFolderUrl + "/child.privileges-info.json";
+		Credentials testUserCreds = new UsernamePasswordCredentials("admin", "admin");
+		String json = H.getAuthenticatedContent(testUserCreds, getUrl, HttpTest.CONTENT_TYPE_JSON, null, HttpServletResponse.SC_OK);
+		assertNotNull(json);
+		JsonObject jsonObject = JsonUtil.parseObject(json);
+		jsonObject = jsonObject.getJsonObject("effectiveAccessRights");
+		
+		JsonObject aceObject = jsonObject.getJsonObject(testUserId);
+		assertNotNull(aceObject);
+
+		JsonArray grantedArray = aceObject.getJsonArray("granted");
+		assertNotNull(grantedArray);
+		assertEquals(1, grantedArray.size());
+		Set<String> grantedPrivilegeNames = new HashSet<String>();
+		for (int i=0; i < grantedArray.size(); i++) {
+			grantedPrivilegeNames.add(grantedArray.getString(i));
+		}
+		H.assertPrivilege(grantedPrivilegeNames,true,"jcr:write");
+
+		JsonArray deniedArray = aceObject.getJsonArray("denied");
+		assertNotNull(deniedArray);
+		assertEquals(0, deniedArray.size());
+
+		JsonObject aceObject2 = jsonObject.getJsonObject(testUserId2);
+		assertNotNull(aceObject2);
+
+		JsonArray grantedArray2 = aceObject2.getJsonArray("granted");
+		assertNotNull(grantedArray2);
+		assertEquals(2, grantedArray2.size());
+		Set<String> grantedPrivilegeNames2 = new HashSet<String>();
+		for (int i=0; i < grantedArray2.size(); i++) {
+			grantedPrivilegeNames2.add(grantedArray2.getString(i));
+		}
+		H.assertPrivilege(grantedPrivilegeNames2, true, "jcr:write");
+		H.assertPrivilege(grantedPrivilegeNames2, true, "jcr:lockManagement");
+
+		JsonArray deniedArray2 = aceObject2.getJsonArray("denied");
+		assertNotNull(deniedArray2);
+		assertEquals(0, deniedArray2.size());
+	}
+
 }

@@ -18,13 +18,94 @@
  * under the License.
  */
 
- var privilegesInfo = new Packages.org.apache.sling.jcr.jackrabbit.accessmanager.PrivilegesInfo();
-%>
-{
-	"canAddChildren" : <%=privilegesInfo.canAddChildren(currentNode)%>,
-	"canDeleteChildren" : <%=privilegesInfo.canDeleteChildren(currentNode)%>,
-	"canDelete" : <%=privilegesInfo.canDelete(currentNode)%>,
-	"canModifyProperties" : <%=privilegesInfo.canModifyProperties(currentNode)%>,
-	"canReadAccessControl" : <%=privilegesInfo.canReadAccessControl(currentNode)%>,
-	"canModifyAccessControl" : <%=privilegesInfo.canModifyAccessControl(currentNode)%>
+var factory = Packages.javax.json.Json.createBuilderFactory(Packages.java.util.Collections.emptyMap());
+var jsonObjBuilder = factory.createObjectBuilder();
+
+var privilegesInfo = new Packages.org.apache.sling.jcr.jackrabbit.accessmanager.PrivilegesInfo();
+ 
+jsonObjBuilder.add("canAddChildren", privilegesInfo.canAddChildren(currentNode));
+jsonObjBuilder.add("canDeleteChildren", privilegesInfo.canDeleteChildren(currentNode));
+jsonObjBuilder.add("canDelete", privilegesInfo.canDelete(currentNode));
+jsonObjBuilder.add("canModifyProperties", privilegesInfo.canModifyProperties(currentNode));
+jsonObjBuilder.add("canReadAccessControl", privilegesInfo.canReadAccessControl(currentNode));
+jsonObjBuilder.add("canModifyAccessControl", privilegesInfo.canModifyAccessControl(currentNode));
+
+if (privilegesInfo.canReadAccessControl(currentNode)) {
+  var declaredBuilder = factory.createObjectBuilder();
+  var declared = privilegesInfo.getDeclaredAccessRights(currentNode);
+  if (declared != null) {
+    var iterator = declared.entrySet().iterator();
+    while (iterator.hasNext()) {
+      var next = iterator.next();
+      var principal = next.getKey();
+      var accessRights = next.getValue();
+
+      var entryBuilder = factory.createObjectBuilder();
+			
+      var grantedBuilder = factory.createArrayBuilder();
+      var granted = accessRights.getGranted();
+      var grantedIt = granted.iterator();
+      while (grantedIt.hasNext()) {
+        var next = grantedIt.next();
+        var name = next.getName();
+        grantedBuilder.add(name);
+      }
+      entryBuilder.add("granted", grantedBuilder);
+    
+      var deniedBuilder = factory.createArrayBuilder();
+      var denied = accessRights.getDenied();
+      var deniedIt = denied.iterator();
+      while (deniedIt.hasNext()) {
+        var next = deniedIt.next();
+        var name = next.getName();
+        deniedBuilder.add(name);
+      }
+      entryBuilder.add("denied", deniedBuilder);
+    
+      declaredBuilder.add(principal.getName(), entryBuilder);
+    }
+  }
+  jsonObjBuilder.add("declaredAccessRights", declaredBuilder);
+
+  var effectiveBuilder = factory.createObjectBuilder();
+  var effective = privilegesInfo.getEffectiveAccessRights(currentNode);
+  if (effective != null) {
+    var iterator = effective.entrySet().iterator();
+    while (iterator.hasNext()) {
+      var next = iterator.next();
+      var principal = next.getKey();
+      var accessRights = next.getValue();
+
+      var entryBuilder = factory.createObjectBuilder();
+			
+      var grantedBuilder = factory.createArrayBuilder();
+      var granted = accessRights.getGranted();
+      var grantedIt = granted.iterator();
+      while (grantedIt.hasNext()) {
+        var next = grantedIt.next();
+        var name = next.getName();
+        grantedBuilder.add(name);
+      }
+      entryBuilder.add("granted", grantedBuilder);
+    
+      var deniedBuilder = factory.createArrayBuilder();
+      var denied = accessRights.getDenied();
+      var deniedIt = denied.iterator();
+      while (deniedIt.hasNext()) {
+        var next = deniedIt.next();
+        var name = next.getName();
+        deniedBuilder.add(name);
+      }
+      entryBuilder.add("denied", deniedBuilder);
+    
+      effectiveBuilder.add(principal.getName(), entryBuilder);
+    }
+  }
+  jsonObjBuilder.add("effectiveAccessRights", effectiveBuilder);
 }
+ 
+var jsonObj = jsonObjBuilder.build();
+var jsonWriter = Packages.javax.json.Json.createWriter(response.getWriter());
+jsonWriter.writeObject(jsonObj);
+jsonWriter.close(); 
+%>
