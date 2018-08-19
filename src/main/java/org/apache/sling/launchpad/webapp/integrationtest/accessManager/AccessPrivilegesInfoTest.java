@@ -342,7 +342,7 @@ public class AccessPrivilegesInfoTest {
 	}
 	
 	/**
-	 * Test for SLING-2600, PrivilegesInfo#getDeclaredAccessRights returns incorrect information
+	 * Test for SLING-7835, PrivilegesInfo#getDeclaredAccessRights returns incorrect information
 	 */
 	@Test 
 	public void testDeclaredAclForUser() throws IOException, JsonException {
@@ -442,7 +442,7 @@ public class AccessPrivilegesInfoTest {
 	}
 	
 	/**
-	 * Test for SLING-2600, PrivilegesInfo#getEffectiveAccessRights returns incorrect information
+	 * Test for SLING-7835, PrivilegesInfo#getEffectiveAccessRights returns incorrect information
 	 */
 	@Test 
 	public void testEffectiveAclForUser() throws IOException, JsonException {
