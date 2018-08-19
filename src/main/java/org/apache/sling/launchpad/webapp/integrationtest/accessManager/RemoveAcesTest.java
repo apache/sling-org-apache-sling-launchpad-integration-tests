@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
+import org.apache.sling.commons.testing.integration.HttpTest;
 import org.apache.sling.launchpad.webapp.integrationtest.util.JsonUtil;
 
 /**
@@ -159,6 +160,23 @@ public class RemoveAcesTest extends AccessManagerTestUtil {
 		assertEquals(0, jsonObject.size());
 	}
 
+	/**
+	 * Test for SLING-7831
+	 */
+	public void testRemoveAceCustomPostResponse() throws IOException, JsonException {
+		String folderUrl = createFolderWithAces(false);
+		
+		//remove the ace for the testUser principal
+		String postUrl = folderUrl + ".deleteAce.html"; 
+		List<NameValuePair> postParams = new ArrayList<NameValuePair>();
+        postParams.add(new NameValuePair(":responseType", "custom"));
+		postParams.add(new NameValuePair(":applyTo", testUserId));
+
+		Credentials creds = new UsernamePasswordCredentials("admin", "admin");
+		String content = getAuthenticatedPostContent(creds, postUrl, HttpTest.CONTENT_TYPE_HTML, postParams, HttpServletResponse.SC_OK);
+		assertEquals("Thanks!", content); //verify that the content matches the custom response
+	}
+	
 	//test removing multiple aces
 	public void testRemoveAces() throws IOException, JsonException {
 		String folderUrl = createFolderWithAces(true);

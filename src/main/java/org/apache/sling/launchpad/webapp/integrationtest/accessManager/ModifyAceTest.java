@@ -17,9 +17,9 @@
 package org.apache.sling.launchpad.webapp.integrationtest.accessManager;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertFalse;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -40,7 +40,6 @@ import org.apache.sling.launchpad.webapp.integrationtest.util.JsonUtil;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 /**
  * Tests for the 'modifyAce' Sling Post Operation
@@ -136,6 +135,27 @@ public class ModifyAceTest {
 		assertEquals(1, deniedArray.size());
 		assertEquals("jcr:write", deniedArray.getString(0));
 	}
+
+	/**
+	 * Test for SLING-7831
+	 */
+	@Test 
+	public void testModifyAceCustomPostResponse() throws IOException, JsonException {
+		testUserId = H.createTestUser();
+		
+		testFolderUrl = H.createTestFolder();
+		
+        String postUrl = testFolderUrl + ".modifyAce.html";
+
+		List<NameValuePair> postParams = new ArrayList<NameValuePair>();
+        postParams.add(new NameValuePair(":responseType", "custom"));
+		postParams.add(new NameValuePair("principalId", testUserId));
+		postParams.add(new NameValuePair("privilege@jcr:read", "granted"));
+		
+		Credentials creds = new UsernamePasswordCredentials("admin", "admin");
+		String content = H.getAuthenticatedPostContent(creds, postUrl, HttpTest.CONTENT_TYPE_HTML, postParams, HttpServletResponse.SC_OK);
+		assertEquals("Thanks!", content); //verify that the content matches the custom response
+	}	
 
 	@Test 
 	public void testModifyAceForGroup() throws IOException, JsonException {

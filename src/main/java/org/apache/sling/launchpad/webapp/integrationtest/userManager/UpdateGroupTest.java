@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
+import org.apache.sling.commons.testing.integration.HttpTest;
 import org.apache.sling.launchpad.webapp.integrationtest.util.JsonUtil;
 
 /**
@@ -79,6 +80,23 @@ public class UpdateGroupTest extends UserManagerTestUtil {
 		JsonObject jsonObj = JsonUtil.parseObject(json);
 		assertEquals("My Updated Test Group", jsonObj.getString("displayName"));
 		assertEquals("http://www.apache.org/updated", jsonObj.getString("url"));
+	}
+
+	/**
+	 * Test for SLING-7831
+	 */
+	public void testUpdateGroupCustomPostResponse() throws IOException, JsonException {
+		testGroupId = createTestGroup();
+
+        String postUrl = HTTP_BASE_URL + "/system/userManager/group/" + testGroupId + ".update.html";
+
+		List<NameValuePair> postParams = new ArrayList<NameValuePair>();
+        postParams.add(new NameValuePair(":responseType", "custom"));
+		postParams.add(new NameValuePair("displayName", "My Updated Test Group"));
+
+		Credentials creds = new UsernamePasswordCredentials("admin", "admin");
+		String content = getAuthenticatedPostContent(creds, postUrl, HttpTest.CONTENT_TYPE_HTML, postParams, HttpServletResponse.SC_OK);
+		assertEquals("Thanks!", content); //verify that the content matches the custom response
 	}
 
 	public void testUpdateGroupMembers() throws IOException, JsonException {

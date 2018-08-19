@@ -27,6 +27,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
+import org.apache.sling.commons.testing.integration.HttpTest;
 import org.apache.sling.launchpad.webapp.integrationtest.util.JsonUtil;
 
 /**
@@ -49,7 +50,22 @@ public class RemoveAuthorizablesTest extends UserManagerTestUtil {
 		getUrl = HTTP_BASE_URL + "/system/userManager/user/" + userId + ".json";
 		assertAuthenticatedHttpStatus(creds, getUrl, HttpServletResponse.SC_NOT_FOUND, null); //make sure the profile request returns some data
 	}
-	
+
+	/**
+	 * Test for SLING-7831
+	 */
+	public void testRemoveUserCustomPostResponse() throws IOException {
+		String userId = createTestUser();
+		
+		String postUrl = HTTP_BASE_URL + "/system/userManager/user/" + userId + ".delete.html";
+		List<NameValuePair> postParams = new ArrayList<NameValuePair>();
+        postParams.add(new NameValuePair(":responseType", "custom"));
+
+		Credentials creds = new UsernamePasswordCredentials("admin", "admin");
+		String content = getAuthenticatedPostContent(creds, postUrl, HttpTest.CONTENT_TYPE_HTML, postParams, HttpServletResponse.SC_OK);
+		assertEquals("Thanks!", content); //verify that the content matches the custom response
+	}
+
 	public void testRemoveGroup() throws IOException {
 		String groupId = createTestGroup();
 		
@@ -64,6 +80,21 @@ public class RemoveAuthorizablesTest extends UserManagerTestUtil {
 		
 		getUrl = HTTP_BASE_URL + "/system/userManager/group/" + groupId + ".json";
 		assertAuthenticatedHttpStatus(creds, getUrl, HttpServletResponse.SC_NOT_FOUND, null); //make sure the profile request returns some data
+	}
+
+	/**
+	 * Test for SLING-7831
+	 */
+	public void testRemoveGroupCustomPostResponse() throws IOException {
+		String groupId = createTestGroup();
+		
+		String postUrl = HTTP_BASE_URL + "/system/userManager/group/" + groupId + ".delete.html";
+		List<NameValuePair> postParams = new ArrayList<NameValuePair>();
+        postParams.add(new NameValuePair(":responseType", "custom"));
+
+		Credentials creds = new UsernamePasswordCredentials("admin", "admin");
+		String content = getAuthenticatedPostContent(creds, postUrl, HttpTest.CONTENT_TYPE_HTML, postParams, HttpServletResponse.SC_OK);
+		assertEquals("Thanks!", content); //verify that the content matches the custom response
 	}
 
 	public void testRemoveAuthorizables() throws IOException {

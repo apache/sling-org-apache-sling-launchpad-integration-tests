@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
+import org.apache.sling.commons.testing.integration.HttpTest;
 import org.apache.sling.launchpad.webapp.integrationtest.util.JsonUtil;
 
 /**
@@ -66,6 +67,23 @@ public class CreateGroupTest extends UserManagerTestUtil {
 		assertNotNull(json);
 		JsonObject jsonObj = JsonUtil.parseObject(json);
 		assertEquals(testGroupId, jsonObj.getString("marker"));
+	}
+
+	/**
+	 * Test for SLING-7831
+	 */
+	public void testCreateGroupCustomPostResponse() throws IOException, JsonException {
+        String postUrl = HTTP_BASE_URL + "/system/userManager/group.create.html";
+
+		testGroupId = "testGroup" + random.nextInt();
+		List<NameValuePair> postParams = new ArrayList<NameValuePair>();
+        postParams.add(new NameValuePair(":responseType", "custom"));
+		postParams.add(new NameValuePair(":name", testGroupId));
+		postParams.add(new NameValuePair("marker", testGroupId));
+
+		Credentials creds = new UsernamePasswordCredentials("admin", "admin");
+		String content = getAuthenticatedPostContent(creds, postUrl, HttpTest.CONTENT_TYPE_HTML, postParams, HttpServletResponse.SC_OK);
+		assertEquals("Thanks!", content); //verify that the content matches the custom response
 	}
 
 	public void testCreateGroupMissingGroupId() throws IOException {

@@ -96,7 +96,25 @@ public class UpdateUserTest {
         jsonObj = JsonUtil.parseObject(json);
         assertEquals("value", jsonObj.getString("param"));
 	}
-	
+
+	/**
+	 * Test for SLING-7831
+	 */
+	@Test 
+	public void testUpdateUserCustomPostResponse() throws IOException {
+		testUserId = H.createTestUser();
+		
+        String postUrl = HttpTest.HTTP_BASE_URL + "/system/userManager/user/" + testUserId + ".update.html";
+
+		List<NameValuePair> postParams = new ArrayList<NameValuePair>();
+        postParams.add(new NameValuePair(":responseType", "custom"));
+		postParams.add(new NameValuePair("displayName", "My Updated Test User"));
+
+		Credentials creds = new UsernamePasswordCredentials(testUserId, "testPwd");
+		String content = H.getAuthenticatedPostContent(creds, postUrl, HttpTest.CONTENT_TYPE_HTML, postParams, HttpServletResponse.SC_OK);
+		assertEquals("Thanks!", content); //verify that the content matches the custom response
+	}
+
 	@Test 
 	public void testChangeUserPassword() throws IOException {
 		testUserId = H.createTestUser();
@@ -111,7 +129,27 @@ public class UpdateUserTest {
 		Credentials creds = new UsernamePasswordCredentials(testUserId, "testPwd");
 		H.assertAuthenticatedPostStatus(creds, postUrl, HttpServletResponse.SC_OK, postParams, null);
 	}
-	
+
+	/**
+	 * Test for SLING-7831
+	 */
+	@Test 
+	public void testChangeUserPasswordCustomPostResponse() throws IOException {
+		testUserId = H.createTestUser();
+		
+        String postUrl = HttpTest.HTTP_BASE_URL + "/system/userManager/user/" + testUserId + ".changePassword.html";
+
+		List<NameValuePair> postParams = new ArrayList<NameValuePair>();
+        postParams.add(new NameValuePair(":responseType", "custom"));
+		postParams.add(new NameValuePair("oldPwd", "testPwd"));
+		postParams.add(new NameValuePair("newPwd", "testNewPwd"));
+		postParams.add(new NameValuePair("newPwdConfirm", "testNewPwd"));
+
+		Credentials creds = new UsernamePasswordCredentials(testUserId, "testPwd");
+		String content = H.getAuthenticatedPostContent(creds, postUrl, HttpTest.CONTENT_TYPE_HTML, postParams, HttpServletResponse.SC_OK);
+		assertEquals("Thanks!", content); //verify that the content matches the custom response
+	}
+
 	@Test 
 	public void testChangeUserPasswordWrongOldPwd() throws IOException {
 		testUserId = H.createTestUser();

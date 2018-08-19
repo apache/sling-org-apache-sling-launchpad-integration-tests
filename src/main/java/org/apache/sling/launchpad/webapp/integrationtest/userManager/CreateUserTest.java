@@ -232,4 +232,22 @@ public class CreateUserTest {
 		JsonObject jsonObj = JsonUtil.parseObject(json);
 		assertNotNull(jsonObj);
 	}
+
+	/**
+	 * Test for SLING-7831
+	 */
+	@Test 
+	public void testCreateUserCustomPostResponse() throws IOException, JsonException {
+        String postUrl = HttpTest.HTTP_BASE_URL + "/system/userManager/user.create.html";
+
+		testUserId = "testUser" + random.nextInt();
+		List<NameValuePair> postParams = new ArrayList<NameValuePair>();
+        postParams.add(new NameValuePair(":responseType", "custom"));
+		postParams.add(new NameValuePair(":name", testUserId));
+		postParams.add(new NameValuePair("pwd", "testPwd"));
+		postParams.add(new NameValuePair("pwdConfirm", "testPwd"));
+		Credentials creds = new UsernamePasswordCredentials("admin", "admin");
+		String content = H.getAuthenticatedPostContent(creds, postUrl, HttpTest.CONTENT_TYPE_HTML, postParams, HttpServletResponse.SC_OK);
+		assertEquals("Thanks!", content); //verify that the content matches the custom response
+	}
 }
