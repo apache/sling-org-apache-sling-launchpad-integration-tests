@@ -44,6 +44,7 @@ import org.junit.Test;
 public class CreateUserTest {
     private static Random random = new Random(System.currentTimeMillis());
     private String testUserId;
+    private String testUserId2;
     
     private final UserManagerTestUtil H = new UserManagerTestUtil(); 
 
@@ -57,6 +58,12 @@ public class CreateUserTest {
 		if (testUserId != null) {
 			//remove the test user if it exists.
 			String postUrl = HttpTest.HTTP_BASE_URL + "/system/userManager/user/" + testUserId + ".delete.html";
+			List<NameValuePair> postParams = new ArrayList<NameValuePair>();
+			H.assertAuthenticatedAdminPostStatus(postUrl, HttpServletResponse.SC_OK, postParams, null);
+		}
+		if (testUserId2 != null) {
+			//remove the test user if it exists.
+			String postUrl = HttpTest.HTTP_BASE_URL + "/system/userManager/user/" + testUserId2 + ".delete.html";
 			List<NameValuePair> postParams = new ArrayList<NameValuePair>();
 			H.assertAuthenticatedAdminPostStatus(postUrl, HttpServletResponse.SC_OK, postParams, null);
 		}
@@ -81,6 +88,59 @@ public class CreateUserTest {
 		postParams.add(new NameValuePair("pwd", "testPwd"));
 		postParams.add(new NameValuePair("pwdConfirm", "testPwd"));
 		final Credentials creds = new UsernamePasswordCredentials("admin", "admin");
+		H.assertAuthenticatedPostStatus(creds, postUrl, HttpServletResponse.SC_OK, postParams, null);
+
+		{
+	        // fetch the user profile json to verify the settings
+	        final String getUrl = HttpTest.HTTP_BASE_URL + "/system/userManager/user/" + testUserId + ".json";
+	        final String json = H.getAuthenticatedContent(creds, getUrl, HttpTest.CONTENT_TYPE_JSON, null, HttpServletResponse.SC_OK);
+	        assertNotNull(json);
+	        final JsonObject jsonObj = JsonUtil.parseObject(json);
+	        assertEquals(testUserId, jsonObj.getString("marker"));
+	        assertFalse(jsonObj.containsKey(":name"));
+	        assertFalse(jsonObj.containsKey("pwd"));
+	        assertFalse(jsonObj.containsKey("pwdConfirm"));
+		}
+		
+        {
+            // fetch the session info to verify that the user can log in
+            final Credentials newUserCreds = new UsernamePasswordCredentials(testUserId, "testPwd");
+            final String getUrl = HttpTest.HTTP_BASE_URL + "/system/sling/info.sessionInfo.json";
+            final String json = H.getAuthenticatedContent(newUserCreds, getUrl, HttpTest.CONTENT_TYPE_JSON, null, HttpServletResponse.SC_OK);
+            assertNotNull(json);
+            final JsonObject jsonObj = JsonUtil.parseObject(json);
+            assertEquals(testUserId, jsonObj.getString("userID"));
+        }
+	}
+
+	@Test 
+	public void testNotAuthorizedCreateUser() throws IOException, JsonException {
+		testUserId2 = H.createTestUser();
+		
+	    String testUserId3 = "testUser" + random.nextInt() + System.currentTimeMillis();
+        String postUrl = HttpTest.HTTP_BASE_URL + "/system/userManager/user.create.html";
+		final List<NameValuePair> postParams = new ArrayList<NameValuePair>();
+		postParams.add(new NameValuePair(":name", testUserId3));
+		postParams.add(new NameValuePair("marker", testUserId3));
+		postParams.add(new NameValuePair("pwd", "testPwd"));
+		postParams.add(new NameValuePair("pwdConfirm", "testPwd"));
+		final Credentials creds = new UsernamePasswordCredentials(testUserId2, "testPwd");
+		H.assertAuthenticatedPostStatus(creds, postUrl, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, postParams, null);
+	}
+
+	@Test 
+	public void testAuthorizedCreateUser() throws IOException, JsonException {
+		testUserId2 = H.createTestUser();
+		H.grantUserManagementRights(testUserId2);
+		
+	    testUserId = "testUser" + random.nextInt() + System.currentTimeMillis();
+        String postUrl = HttpTest.HTTP_BASE_URL + "/system/userManager/user.create.html";
+		final List<NameValuePair> postParams = new ArrayList<NameValuePair>();
+		postParams.add(new NameValuePair(":name", testUserId));
+		postParams.add(new NameValuePair("marker", testUserId));
+		postParams.add(new NameValuePair("pwd", "testPwd"));
+		postParams.add(new NameValuePair("pwdConfirm", "testPwd"));
+		final Credentials creds = new UsernamePasswordCredentials(testUserId2, "testPwd");
 		H.assertAuthenticatedPostStatus(creds, postUrl, HttpServletResponse.SC_OK, postParams, null);
 
 		{

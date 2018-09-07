@@ -37,13 +37,27 @@ import org.apache.sling.launchpad.webapp.integrationtest.util.JsonUtil;
 public class CreateGroupTest extends UserManagerTestUtil {
     private static Random random = new Random(System.currentTimeMillis());
 
+	String testUserId = null;
 	String testGroupId = null;
+	String testGroupId2 = null;
 
 	@Override
 	public void tearDown() throws Exception {
 		if (testGroupId != null) {
 			//remove the test group if it exists.
 			String postUrl = HTTP_BASE_URL + "/system/userManager/group/" + testGroupId + ".delete.html";
+			List<NameValuePair> postParams = new ArrayList<NameValuePair>();
+			assertAuthenticatedAdminPostStatus(postUrl, HttpServletResponse.SC_OK, postParams, null);
+		}
+		if (testGroupId2 != null) {
+			//remove the test group if it exists.
+			String postUrl = HTTP_BASE_URL + "/system/userManager/group/" + testGroupId2 + ".delete.html";
+			List<NameValuePair> postParams = new ArrayList<NameValuePair>();
+			assertAuthenticatedAdminPostStatus(postUrl, HttpServletResponse.SC_OK, postParams, null);
+		}
+		if (testUserId != null) {
+			//remove the test user if it exists.
+			String postUrl = HttpTest.HTTP_BASE_URL + "/system/userManager/user/" + testUserId + ".delete.html";
 			List<NameValuePair> postParams = new ArrayList<NameValuePair>();
 			assertAuthenticatedAdminPostStatus(postUrl, HttpServletResponse.SC_OK, postParams, null);
 		}
@@ -63,6 +77,41 @@ public class CreateGroupTest extends UserManagerTestUtil {
 		//fetch the group profile json to verify the settings
 		String getUrl = HTTP_BASE_URL + "/system/userManager/group/" + testGroupId + ".json";
 		Credentials creds = new UsernamePasswordCredentials("admin", "admin");
+		String json = getAuthenticatedContent(creds, getUrl, CONTENT_TYPE_JSON, null, HttpServletResponse.SC_OK);
+		assertNotNull(json);
+		JsonObject jsonObj = JsonUtil.parseObject(json);
+		assertEquals(testGroupId, jsonObj.getString("marker"));
+	}
+
+	public void testNotAuthorizedCreateGroup() throws IOException, JsonException {
+		testUserId = createTestUser();
+        String postUrl = HTTP_BASE_URL + "/system/userManager/group.create.html";
+
+		Credentials creds = new UsernamePasswordCredentials(testUserId, "testPwd");
+
+		String testGroupId2 = "testGroup" + random.nextInt();
+		List<NameValuePair> postParams = new ArrayList<NameValuePair>();
+		postParams.add(new NameValuePair(":name", testGroupId2));
+		postParams.add(new NameValuePair("marker", testGroupId2));
+		assertAuthenticatedPostStatus(creds, postUrl, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, postParams, null);
+	}
+
+	public void testAuthorizedCreateGroup() throws IOException, JsonException {
+		testUserId = createTestUser();
+		grantUserManagementRights(testUserId);
+		
+        String postUrl = HTTP_BASE_URL + "/system/userManager/group.create.html";
+
+		Credentials creds = new UsernamePasswordCredentials("admin", "admin");
+
+		testGroupId = "testGroup" + random.nextInt();
+		List<NameValuePair> postParams = new ArrayList<NameValuePair>();
+		postParams.add(new NameValuePair(":name", testGroupId));
+		postParams.add(new NameValuePair("marker", testGroupId));
+		assertAuthenticatedPostStatus(creds, postUrl, HttpServletResponse.SC_OK, postParams, null);
+
+		//fetch the group profile json to verify the settings
+		String getUrl = HTTP_BASE_URL + "/system/userManager/group/" + testGroupId + ".json";
 		String json = getAuthenticatedContent(creds, getUrl, CONTENT_TYPE_JSON, null, HttpServletResponse.SC_OK);
 		assertNotNull(json);
 		JsonObject jsonObj = JsonUtil.parseObject(json);

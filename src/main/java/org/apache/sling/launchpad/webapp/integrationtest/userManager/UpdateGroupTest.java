@@ -40,12 +40,19 @@ public class UpdateGroupTest extends UserManagerTestUtil {
 	String testGroupId = null;
 
 	String testUserId = null;
+	String testUserId2 = null;
 
 	@Override
 	public void tearDown() throws Exception {
         if (testUserId != null) {
             //remove the test user if it exists.
             String postUrl = HTTP_BASE_URL + "/system/userManager/user/" + testUserId + ".delete.html";
+            List<NameValuePair> postParams = new ArrayList<NameValuePair>();
+            assertAuthenticatedAdminPostStatus(postUrl, HttpServletResponse.SC_OK, postParams, null);
+        }
+        if (testUserId2 != null) {
+            //remove the test user if it exists.
+            String postUrl = HTTP_BASE_URL + "/system/userManager/user/" + testUserId2 + ".delete.html";
             List<NameValuePair> postParams = new ArrayList<NameValuePair>();
             assertAuthenticatedAdminPostStatus(postUrl, HttpServletResponse.SC_OK, postParams, null);
         }
@@ -82,6 +89,48 @@ public class UpdateGroupTest extends UserManagerTestUtil {
 		assertEquals("http://www.apache.org/updated", jsonObj.getString("url"));
 	}
 
+	public void testNotAuthorizedUpdateGroup() throws IOException, JsonException {
+		//a user who is not authorized to do the action
+		testUserId2 = createTestUser();
+
+		testGroupId = createTestGroup();
+
+        String postUrl = HTTP_BASE_URL + "/system/userManager/group/" + testGroupId + ".update.html";
+
+		List<NameValuePair> postParams = new ArrayList<NameValuePair>();
+		postParams.add(new NameValuePair("displayName", "My Updated Test Group"));
+		postParams.add(new NameValuePair("url", "http://www.apache.org/updated"));
+
+		Credentials creds = new UsernamePasswordCredentials(testUserId2, "testPwd");
+		assertAuthenticatedPostStatus(creds, postUrl, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, postParams, null);
+	}
+
+	public void testAuthorizedUpdateGroup() throws IOException, JsonException {
+		//a user who is authorized to do the action
+		testUserId2 = createTestUser();
+		grantUserManagementRights(testUserId2);
+
+		testGroupId = createTestGroup();
+
+        String postUrl = HTTP_BASE_URL + "/system/userManager/group/" + testGroupId + ".update.html";
+
+		List<NameValuePair> postParams = new ArrayList<NameValuePair>();
+		postParams.add(new NameValuePair("displayName", "My Updated Test Group"));
+		postParams.add(new NameValuePair("url", "http://www.apache.org/updated"));
+
+		Credentials creds = new UsernamePasswordCredentials(testUserId2, "testPwd");
+		assertAuthenticatedPostStatus(creds, postUrl, HttpServletResponse.SC_OK, postParams, null);
+
+		//fetch the user profile json to verify the settings
+		String getUrl = HTTP_BASE_URL + "/system/userManager/group/" + testGroupId + ".json";
+		assertAuthenticatedHttpStatus(creds, getUrl, HttpServletResponse.SC_OK, null); //make sure the profile request returns some data
+		String json = getAuthenticatedContent(creds, getUrl, CONTENT_TYPE_JSON, null, HttpServletResponse.SC_OK);
+		assertNotNull(json);
+		JsonObject jsonObj = JsonUtil.parseObject(json);
+		assertEquals("My Updated Test Group", jsonObj.getString("displayName"));
+		assertEquals("http://www.apache.org/updated", jsonObj.getString("url"));
+	}
+	
 	/**
 	 * Test for SLING-7831
 	 */
@@ -140,6 +189,96 @@ public class UpdateGroupTest extends UserManagerTestUtil {
 
 	}
 
+	public void testNotAuthorizedUpdateGroupMembers() throws IOException, JsonException {
+		//a user who is authorized to do the action
+		testUserId2 = createTestUser();
+		grantUserManagementRights(testUserId2);
+		
+		testGroupId = createTestGroup();
+		testUserId = createTestUser();
+
+        Credentials creds = new UsernamePasswordCredentials(testUserId2, "testPwd");
+
+		// verify that the members array exists, but is empty
+		JsonArray members = getTestGroupMembers(creds);
+        assertEquals(0, members.size());
+
+        JsonArray memberships = getTestUserMemberships(creds);
+        assertEquals(0, memberships.size());
+
+        String postUrl = HTTP_BASE_URL + "/system/userManager/group/" + testGroupId + ".update.html";
+
+        // add a group member
+		List<NameValuePair> postParams = new ArrayList<NameValuePair>();
+		postParams.add(new NameValuePair(":member", testUserId));
+        assertAuthenticatedPostStatus(creds, postUrl, HttpServletResponse.SC_OK, postParams, null);
+
+        members = getTestGroupMembers(creds);
+        assertEquals(1, members.size());
+        assertEquals("/system/userManager/user/" + testUserId, members.getString(0));
+
+        memberships = getTestUserMemberships(creds);
+        assertEquals(1, memberships.size());
+        assertEquals("/system/userManager/group/" + testGroupId, memberships.getString(0));
+
+        // delete a group member
+		postParams.clear();
+		postParams.add(new NameValuePair(":member@Delete", testUserId));
+        assertAuthenticatedPostStatus(creds, postUrl, HttpServletResponse.SC_OK, postParams, null);
+
+        members = getTestGroupMembers(creds);
+        assertEquals(0, members.size());
+
+        memberships = getTestUserMemberships(creds);
+        assertEquals(0, memberships.size());
+
+	}
+
+	public void testAuthorizedUpdateGroupMembers() throws IOException, JsonException {
+		//a user who is authorized to do the action
+		testUserId2 = createTestUser();
+		grantUserManagementRights(testUserId2);
+
+		testGroupId = createTestGroup();
+		testUserId = createTestUser();
+
+        Credentials creds = new UsernamePasswordCredentials(testUserId2, "testPwd");
+
+		// verify that the members array exists, but is empty
+		JsonArray members = getTestGroupMembers(creds);
+        assertEquals(0, members.size());
+
+        JsonArray memberships = getTestUserMemberships(creds);
+        assertEquals(0, memberships.size());
+
+        String postUrl = HTTP_BASE_URL + "/system/userManager/group/" + testGroupId + ".update.html";
+
+        // add a group member
+		List<NameValuePair> postParams = new ArrayList<NameValuePair>();
+		postParams.add(new NameValuePair(":member", testUserId));
+        assertAuthenticatedPostStatus(creds, postUrl, HttpServletResponse.SC_OK, postParams, null);
+
+        members = getTestGroupMembers(creds);
+        assertEquals(1, members.size());
+        assertEquals("/system/userManager/user/" + testUserId, members.getString(0));
+
+        memberships = getTestUserMemberships(creds);
+        assertEquals(1, memberships.size());
+        assertEquals("/system/userManager/group/" + testGroupId, memberships.getString(0));
+
+        // delete a group member
+		postParams.clear();
+		postParams.add(new NameValuePair(":member@Delete", testUserId));
+        assertAuthenticatedPostStatus(creds, postUrl, HttpServletResponse.SC_OK, postParams, null);
+
+        members = getTestGroupMembers(creds);
+        assertEquals(0, members.size());
+
+        memberships = getTestUserMemberships(creds);
+        assertEquals(0, memberships.size());
+
+	}
+	
 	JsonArray getTestUserMemberships(Credentials creds) throws IOException, JsonException {
 	    String getUrl = HTTP_BASE_URL + "/system/userManager/user/" + testUserId + ".json";
         assertAuthenticatedHttpStatus(creds, getUrl, HttpServletResponse.SC_OK, null); //make sure the profile request returns some data

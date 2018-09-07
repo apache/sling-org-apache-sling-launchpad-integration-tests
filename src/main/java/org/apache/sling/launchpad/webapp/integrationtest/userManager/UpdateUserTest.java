@@ -45,6 +45,7 @@ import org.junit.Test;
 public class UpdateUserTest {
 
 	String testUserId = null;
+	String testUserId2 = null;
 	private final UserManagerTestUtil H = new UserManagerTestUtil();
 	
     @Before
@@ -57,6 +58,12 @@ public class UpdateUserTest {
 		if (testUserId != null) {
 			//remove the test user if it exists.
 			String postUrl = HttpTest.HTTP_BASE_URL + "/system/userManager/user/" + testUserId + ".delete.html";
+			List<NameValuePair> postParams = new ArrayList<NameValuePair>();
+			H.assertAuthenticatedAdminPostStatus(postUrl, HttpServletResponse.SC_OK, postParams, null);
+		}
+		if (testUserId2 != null) {
+			//remove the test user if it exists.
+			String postUrl = HttpTest.HTTP_BASE_URL + "/system/userManager/user/" + testUserId2 + ".delete.html";
 			List<NameValuePair> postParams = new ArrayList<NameValuePair>();
 			H.assertAuthenticatedAdminPostStatus(postUrl, HttpServletResponse.SC_OK, postParams, null);
 		}
@@ -97,6 +104,65 @@ public class UpdateUserTest {
         assertEquals("value", jsonObj.getString("param"));
 	}
 
+	@Test 
+	public void testNotAuthorizedUpdateUser() throws IOException, JsonException {
+		//a user who is not authorized to do the action
+		testUserId2 = H.createTestUser();
+
+		testUserId = H.createTestUser();
+		
+        String postUrl = HttpTest.HTTP_BASE_URL + "/system/userManager/user/" + testUserId + ".update.html";
+
+		List<NameValuePair> postParams = new ArrayList<NameValuePair>();
+		postParams.add(new NameValuePair("displayName", "My Updated Test User"));
+		postParams.add(new NameValuePair("url", "http://www.apache.org/updated"));
+		// add nested param (SLING-6747)
+		postParams.add(new NameValuePair("nested/param", "value"));
+		Credentials creds = new UsernamePasswordCredentials(testUserId2, "testPwd");
+		H.assertAuthenticatedPostStatus(creds, postUrl, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, postParams, null);
+		
+		//fetch the user profile json to verify the settings
+		String getUrl = HttpTest.HTTP_BASE_URL + "/system/userManager/user/" + testUserId + ".json";
+		H.assertAuthenticatedHttpStatus(creds, getUrl, HttpServletResponse.SC_NOT_FOUND, null); //make sure the profile request is not there
+	}
+
+	@Test 
+	public void testAuthorizedUpdateUser() throws IOException, JsonException {
+		//a user who is authorized to do the action
+		testUserId2 = H.createTestUser();
+		H.grantUserManagementRights(testUserId2);
+
+		testUserId = H.createTestUser();
+		
+        String postUrl = HttpTest.HTTP_BASE_URL + "/system/userManager/user/" + testUserId + ".update.html";
+
+		List<NameValuePair> postParams = new ArrayList<NameValuePair>();
+		postParams.add(new NameValuePair("displayName", "My Updated Test User"));
+		postParams.add(new NameValuePair("url", "http://www.apache.org/updated"));
+		// add nested param (SLING-6747)
+		postParams.add(new NameValuePair("nested/param", "value"));
+		Credentials creds = new UsernamePasswordCredentials(testUserId2, "testPwd");
+		H.assertAuthenticatedPostStatus(creds, postUrl, HttpServletResponse.SC_OK, postParams, null);
+		
+		//fetch the user profile json to verify the settings
+		String getUrl = HttpTest.HTTP_BASE_URL + "/system/userManager/user/" + testUserId + ".json";
+		H.assertAuthenticatedHttpStatus(creds, getUrl, HttpServletResponse.SC_OK, null); //make sure the profile request returns some data
+		String json = H.getAuthenticatedContent(creds, getUrl, HttpTest.CONTENT_TYPE_JSON, null, HttpServletResponse.SC_OK);
+		assertNotNull(json);
+		JsonObject jsonObj = JsonUtil.parseObject(json);
+		assertEquals("My Updated Test User", jsonObj.getString("displayName"));
+		assertEquals("http://www.apache.org/updated", jsonObj.getString("url"));
+		// get path (SLING-6753)
+		String path = jsonObj.getString("path");
+		assertNotNull(path);
+		// retrieve nested property via regular GET servlet
+		getUrl = HttpTest.HTTP_BASE_URL + path + "/nested.json";
+		json = H.getAuthenticatedContent(creds, getUrl, HttpTest.CONTENT_TYPE_JSON, null, HttpServletResponse.SC_OK);
+        assertNotNull(json);
+        jsonObj = JsonUtil.parseObject(json);
+        assertEquals("value", jsonObj.getString("param"));
+	}
+	
 	/**
 	 * Test for SLING-7831
 	 */

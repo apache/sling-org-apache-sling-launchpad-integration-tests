@@ -34,11 +34,68 @@ import org.apache.sling.launchpad.webapp.integrationtest.util.JsonUtil;
  * Tests for the 'removeAuthorizable' Sling Post Operation
  */
 public class RemoveAuthorizablesTest extends UserManagerTestUtil {
+    private String testUserId2;
+
+    
+	/* (non-Javadoc)
+	 * @see org.apache.sling.commons.testing.integration.HttpTest#tearDown()
+	 */
+	@Override
+	public void tearDown() throws Exception {
+		if (testUserId2 != null) {
+			//remove the test user if it exists.
+			String postUrl = HttpTest.HTTP_BASE_URL + "/system/userManager/user/" + testUserId2 + ".delete.html";
+			List<NameValuePair> postParams = new ArrayList<NameValuePair>();
+			assertAuthenticatedAdminPostStatus(postUrl, HttpServletResponse.SC_OK, postParams, null);
+		}
+
+		super.tearDown();
+	}
 
 	public void testRemoveUser() throws IOException {
 		String userId = createTestUser();
 		
         Credentials creds = new UsernamePasswordCredentials("admin", "admin");
+
+		String getUrl = HTTP_BASE_URL + "/system/userManager/user/" + userId + ".json";
+		assertAuthenticatedHttpStatus(creds, getUrl, HttpServletResponse.SC_OK, null); //make sure the profile request returns some data
+
+		String postUrl = HTTP_BASE_URL + "/system/userManager/user/" + userId + ".delete.html";
+		List<NameValuePair> postParams = new ArrayList<NameValuePair>();
+		assertAuthenticatedPostStatus(creds, postUrl, HttpServletResponse.SC_OK, postParams, null);
+		
+		getUrl = HTTP_BASE_URL + "/system/userManager/user/" + userId + ".json";
+		assertAuthenticatedHttpStatus(creds, getUrl, HttpServletResponse.SC_NOT_FOUND, null); //make sure the profile request returns some data
+	}
+
+	public void testNotAuthorizedRemoveUser() throws IOException {
+		//a user who is not authorized to do the action
+		testUserId2 = createTestUser();
+
+		String userId = createTestUser();
+		
+        Credentials creds = new UsernamePasswordCredentials("admin", "admin");
+
+		String getUrl = HTTP_BASE_URL + "/system/userManager/user/" + userId + ".json";
+		assertAuthenticatedHttpStatus(creds, getUrl, HttpServletResponse.SC_OK, null); //make sure the profile request returns some data
+
+        Credentials creds2 = new UsernamePasswordCredentials(testUserId2, "testPwd");
+		String postUrl = HTTP_BASE_URL + "/system/userManager/user/" + userId + ".delete.html";
+		List<NameValuePair> postParams = new ArrayList<NameValuePair>();
+		assertAuthenticatedPostStatus(creds2, postUrl, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, postParams, null);
+		
+		getUrl = HTTP_BASE_URL + "/system/userManager/user/" + userId + ".json";
+		assertAuthenticatedHttpStatus(creds, getUrl, HttpServletResponse.SC_OK, null); //make sure the profile request returns some data
+	}
+
+	public void testAuthorizedRemoveUser() throws IOException {
+		//a user who is authorized to do the action
+		testUserId2 = createTestUser();
+		grantUserManagementRights(testUserId2);
+
+		String userId = createTestUser();
+		
+        Credentials creds = new UsernamePasswordCredentials(testUserId2, "testPwd");
 
 		String getUrl = HTTP_BASE_URL + "/system/userManager/user/" + userId + ".json";
 		assertAuthenticatedHttpStatus(creds, getUrl, HttpServletResponse.SC_OK, null); //make sure the profile request returns some data
@@ -70,6 +127,46 @@ public class RemoveAuthorizablesTest extends UserManagerTestUtil {
 		String groupId = createTestGroup();
 		
         Credentials creds = new UsernamePasswordCredentials("admin", "admin");
+
+		String getUrl = HTTP_BASE_URL + "/system/userManager/group/" + groupId + ".json";
+		assertAuthenticatedHttpStatus(creds, getUrl, HttpServletResponse.SC_OK, null); //make sure the profile request returns some data
+
+		String postUrl = HTTP_BASE_URL + "/system/userManager/group/" + groupId + ".delete.html";
+		List<NameValuePair> postParams = new ArrayList<NameValuePair>();
+		assertAuthenticatedPostStatus(creds, postUrl, HttpServletResponse.SC_OK, postParams, null);
+		
+		getUrl = HTTP_BASE_URL + "/system/userManager/group/" + groupId + ".json";
+		assertAuthenticatedHttpStatus(creds, getUrl, HttpServletResponse.SC_NOT_FOUND, null); //make sure the profile request returns some data
+	}
+
+	public void testNotAuthorizedRemoveGroup() throws IOException {
+		//a user who is not authorized to do the action
+		testUserId2 = createTestUser();
+
+		String groupId = createTestGroup();
+		
+        Credentials creds = new UsernamePasswordCredentials("admin", "admin");
+
+		String getUrl = HTTP_BASE_URL + "/system/userManager/group/" + groupId + ".json";
+		assertAuthenticatedHttpStatus(creds, getUrl, HttpServletResponse.SC_OK, null); //make sure the profile request returns some data
+
+        Credentials creds2 = new UsernamePasswordCredentials(testUserId2, "testPwd");
+		String postUrl = HTTP_BASE_URL + "/system/userManager/group/" + groupId + ".delete.html";
+		List<NameValuePair> postParams = new ArrayList<NameValuePair>();
+		assertAuthenticatedPostStatus(creds2, postUrl, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, postParams, null);
+		
+		getUrl = HTTP_BASE_URL + "/system/userManager/group/" + groupId + ".json";
+		assertAuthenticatedHttpStatus(creds, getUrl, HttpServletResponse.SC_OK, null); //make sure the profile request returns some data
+	}
+
+	public void testAuthorizedRemoveGroup() throws IOException {
+		//a user who is authorized to do the action
+		testUserId2 = createTestUser();
+		grantUserManagementRights(testUserId2);
+
+		String groupId = createTestGroup();
+		
+        Credentials creds = new UsernamePasswordCredentials(testUserId2, "testPwd");
 
 		String getUrl = HTTP_BASE_URL + "/system/userManager/group/" + groupId + ".json";
 		assertAuthenticatedHttpStatus(creds, getUrl, HttpServletResponse.SC_OK, null); //make sure the profile request returns some data

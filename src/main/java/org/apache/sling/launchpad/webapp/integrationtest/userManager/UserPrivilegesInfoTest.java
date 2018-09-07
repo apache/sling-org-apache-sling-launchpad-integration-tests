@@ -18,6 +18,7 @@ package org.apache.sling.launchpad.webapp.integrationtest.userManager;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -41,8 +42,8 @@ public class UserPrivilegesInfoTest {
 	
 	String testUserId = null;
 	String testUserId2 = null;
+	String testUserId3 = null;
 	String testGroupId = null;
-	String testFolderUrl = null;
     Set<String> toDelete = new HashSet<String>();
 	
     private final UserManagerTestUtil H = new UserManagerTestUtil();
@@ -65,13 +66,6 @@ public class UserPrivilegesInfoTest {
 
 		Credentials creds = new UsernamePasswordCredentials("admin", "admin");
 
-		if (testFolderUrl != null) {
-			//remove the test user if it exists.
-			String postUrl = testFolderUrl;
-			List<NameValuePair> postParams = new ArrayList<NameValuePair>();
-			postParams.add(new NameValuePair(":operation", "delete"));
-			H.assertAuthenticatedPostStatus(creds, postUrl, HttpServletResponse.SC_OK, postParams, null);
-		}
 		if (testGroupId != null) {
 			//remove the test user if it exists.
 			String postUrl = HttpTest.HTTP_BASE_URL + "/system/userManager/group/" + testGroupId + ".delete.html";
@@ -90,12 +84,32 @@ public class UserPrivilegesInfoTest {
 			List<NameValuePair> postParams = new ArrayList<NameValuePair>();
 			H.assertAuthenticatedPostStatus(creds, postUrl, HttpServletResponse.SC_OK, postParams, null);
 		}
+		if (testUserId3 != null) {
+			//remove the test user if it exists.
+			String postUrl = HttpTest.HTTP_BASE_URL + "/system/userManager/user/" + testUserId3 + ".delete.html";
+			List<NameValuePair> postParams = new ArrayList<NameValuePair>();
+			H.assertAuthenticatedPostStatus(creds, postUrl, HttpServletResponse.SC_OK, postParams, null);
+		}
 		
         for(String script : toDelete) {
             H.getTestClient().delete(script);
         }
 	}
 	
+	private void grantUserManagerRights(String principalId) throws IOException {
+        String postUrl = HttpTest.HTTP_BASE_URL + "/home.modifyAce.html";
+
+        List<NameValuePair> postParams = new ArrayList<NameValuePair>();
+		postParams.add(new NameValuePair("principalId", principalId));
+		postParams.add(new NameValuePair("privilege@jcr:read", "granted"));
+		postParams.add(new NameValuePair("privilege@rep:write", "granted"));
+		postParams.add(new NameValuePair("privilege@jcr:readAccessControl", "granted"));
+		postParams.add(new NameValuePair("privilege@jcr:modifyAccessControl", "granted"));
+		postParams.add(new NameValuePair("privilege@rep:userManagement", "granted"));
+		
+		Credentials creds = new UsernamePasswordCredentials("admin", "admin");
+		H.assertAuthenticatedPostStatus(creds, postUrl, HttpServletResponse.SC_OK, postParams, null);
+	}
 	
 	/**
 	 * Checks whether the current user has been granted privileges
@@ -115,6 +129,27 @@ public class UserPrivilegesInfoTest {
 		JsonObject jsonObj = JsonUtil.parseObject(json);
 		
 		assertEquals(false, jsonObj.getBoolean("canAddUser"));
+		
+		//try admin user
+		testUserCreds = new UsernamePasswordCredentials("admin", "admin");
+
+		json = H.getAuthenticatedContent(testUserCreds, getUrl, HttpTest.CONTENT_TYPE_JSON, null, HttpServletResponse.SC_OK);
+		assertNotNull(json);
+		jsonObj = JsonUtil.parseObject(json);
+		
+		assertEquals(true, jsonObj.getBoolean("canAddUser"));
+		
+		//try non-admin with sufficient privileges
+		testUserId3 = H.createTestUser();
+		grantUserManagerRights(testUserId3);
+		
+		testUserCreds = new UsernamePasswordCredentials(testUserId3, "testPwd");
+
+		json = H.getAuthenticatedContent(testUserCreds, getUrl, HttpTest.CONTENT_TYPE_JSON, null, HttpServletResponse.SC_OK);
+		assertNotNull(json);
+		jsonObj = JsonUtil.parseObject(json);
+		
+		assertEquals(true, jsonObj.getBoolean("canAddUser"));
 	}
 
 	/**
@@ -135,6 +170,27 @@ public class UserPrivilegesInfoTest {
 		JsonObject jsonObj = JsonUtil.parseObject(json);
 		
 		assertEquals(false, jsonObj.getBoolean("canAddGroup"));
+		
+		//try admin user
+		testUserCreds = new UsernamePasswordCredentials("admin", "admin");
+
+		json = H.getAuthenticatedContent(testUserCreds, getUrl, HttpTest.CONTENT_TYPE_JSON, null, HttpServletResponse.SC_OK);
+		assertNotNull(json);
+		jsonObj = JsonUtil.parseObject(json);
+		
+		assertEquals(true, jsonObj.getBoolean("canAddGroup"));
+		
+		//try non-admin with sufficient privileges
+		testUserId3 = H.createTestUser();
+		grantUserManagerRights(testUserId3);
+		
+		testUserCreds = new UsernamePasswordCredentials(testUserId3, "testPwd");
+
+		json = H.getAuthenticatedContent(testUserCreds, getUrl, HttpTest.CONTENT_TYPE_JSON, null, HttpServletResponse.SC_OK);
+		assertNotNull(json);
+		jsonObj = JsonUtil.parseObject(json);
+		
+		assertEquals(true, jsonObj.getBoolean("canAddGroup"));
 	}
 	
 	/**
@@ -171,6 +227,28 @@ public class UserPrivilegesInfoTest {
 		
 		//user can not update other users properties
 		assertEquals(false, jsonObj2.getBoolean("canUpdateProperties"));
+
+		
+		//try admin user
+		testUserCreds = new UsernamePasswordCredentials("admin", "admin");
+
+		json = H.getAuthenticatedContent(testUserCreds, getUrl, HttpTest.CONTENT_TYPE_JSON, null, HttpServletResponse.SC_OK);
+		assertNotNull(json);
+		jsonObj = JsonUtil.parseObject(json);
+		
+		assertEquals(true, jsonObj.getBoolean("canUpdateProperties"));
+		
+		//try non-admin with sufficient privileges
+		testUserId3 = H.createTestUser();
+		grantUserManagerRights(testUserId3);
+		
+		testUserCreds = new UsernamePasswordCredentials(testUserId3, "testPwd");
+
+		json = H.getAuthenticatedContent(testUserCreds, getUrl, HttpTest.CONTENT_TYPE_JSON, null, HttpServletResponse.SC_OK);
+		assertNotNull(json);
+		jsonObj = JsonUtil.parseObject(json);
+		
+		assertEquals(true, jsonObj.getBoolean("canUpdateProperties"));
 	}
 
 	/**
@@ -194,6 +272,28 @@ public class UserPrivilegesInfoTest {
 		
 		//normal user can not update group properties
 		assertEquals(false, jsonObj.getBoolean("canUpdateProperties"));
+		
+		
+		//try admin user
+		testUserCreds = new UsernamePasswordCredentials("admin", "admin");
+
+		json = H.getAuthenticatedContent(testUserCreds, getUrl, HttpTest.CONTENT_TYPE_JSON, null, HttpServletResponse.SC_OK);
+		assertNotNull(json);
+		jsonObj = JsonUtil.parseObject(json);
+		
+		assertEquals(true, jsonObj.getBoolean("canUpdateProperties"));
+		
+		//try non-admin with sufficient privileges
+		testUserId3 = H.createTestUser();
+		grantUserManagerRights(testUserId3);
+		
+		testUserCreds = new UsernamePasswordCredentials(testUserId3, "testPwd");
+
+		json = H.getAuthenticatedContent(testUserCreds, getUrl, HttpTest.CONTENT_TYPE_JSON, null, HttpServletResponse.SC_OK);
+		assertNotNull(json);
+		jsonObj = JsonUtil.parseObject(json);
+		
+		assertEquals(true, jsonObj.getBoolean("canUpdateProperties"));
 	}
 	
 	/**
@@ -230,6 +330,28 @@ public class UserPrivilegesInfoTest {
 		
 		//user can not delete other users
 		assertEquals(false, jsonObj2.getBoolean("canRemove"));
+
+		
+		//try admin user
+		testUserCreds = new UsernamePasswordCredentials("admin", "admin");
+
+		json = H.getAuthenticatedContent(testUserCreds, getUrl, HttpTest.CONTENT_TYPE_JSON, null, HttpServletResponse.SC_OK);
+		assertNotNull(json);
+		jsonObj = JsonUtil.parseObject(json);
+		
+		assertEquals(true, jsonObj.getBoolean("canRemove"));
+		
+		//try non-admin with sufficient privileges
+		testUserId3 = H.createTestUser();
+		grantUserManagerRights(testUserId3);
+		
+		testUserCreds = new UsernamePasswordCredentials(testUserId3, "testPwd");
+
+		json = H.getAuthenticatedContent(testUserCreds, getUrl, HttpTest.CONTENT_TYPE_JSON, null, HttpServletResponse.SC_OK);
+		assertNotNull(json);
+		jsonObj = JsonUtil.parseObject(json);
+		
+		assertEquals(true, jsonObj.getBoolean("canRemove"));
 	}
 
 	/**
@@ -253,6 +375,27 @@ public class UserPrivilegesInfoTest {
 		
 		//normal user can not remove group
 		assertEquals(false, jsonObj.getBoolean("canRemove"));
+
+		//try admin user
+		testUserCreds = new UsernamePasswordCredentials("admin", "admin");
+
+		json = H.getAuthenticatedContent(testUserCreds, getUrl, HttpTest.CONTENT_TYPE_JSON, null, HttpServletResponse.SC_OK);
+		assertNotNull(json);
+		jsonObj = JsonUtil.parseObject(json);
+		
+		assertEquals(true, jsonObj.getBoolean("canRemove"));
+		
+		//try non-admin with sufficient privileges
+		testUserId3 = H.createTestUser();
+		grantUserManagerRights(testUserId3);
+		
+		testUserCreds = new UsernamePasswordCredentials(testUserId3, "testPwd");
+
+		json = H.getAuthenticatedContent(testUserCreds, getUrl, HttpTest.CONTENT_TYPE_JSON, null, HttpServletResponse.SC_OK);
+		assertNotNull(json);
+		jsonObj = JsonUtil.parseObject(json);
+		
+		assertEquals(true, jsonObj.getBoolean("canRemove"));
 	}
 	
 	/**
@@ -276,5 +419,26 @@ public class UserPrivilegesInfoTest {
 		
 		//normal user can not remove group
 		assertEquals(false, jsonObj.getBoolean("canUpdateGroupMembers"));
+
+		//try admin user
+		testUserCreds = new UsernamePasswordCredentials("admin", "admin");
+
+		json = H.getAuthenticatedContent(testUserCreds, getUrl, HttpTest.CONTENT_TYPE_JSON, null, HttpServletResponse.SC_OK);
+		assertNotNull(json);
+		jsonObj = JsonUtil.parseObject(json);
+		
+		assertEquals(true, jsonObj.getBoolean("canUpdateGroupMembers"));
+		
+		//try non-admin with sufficient privileges
+		testUserId3 = H.createTestUser();
+		grantUserManagerRights(testUserId3);
+		
+		testUserCreds = new UsernamePasswordCredentials(testUserId3, "testPwd");
+
+		json = H.getAuthenticatedContent(testUserCreds, getUrl, HttpTest.CONTENT_TYPE_JSON, null, HttpServletResponse.SC_OK);
+		assertNotNull(json);
+		jsonObj = JsonUtil.parseObject(json);
+		
+		assertEquals(true, jsonObj.getBoolean("canUpdateGroupMembers"));
 	}
 }

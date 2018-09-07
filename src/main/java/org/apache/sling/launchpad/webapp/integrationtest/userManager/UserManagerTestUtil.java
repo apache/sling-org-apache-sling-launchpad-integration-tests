@@ -25,6 +25,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
+import org.apache.sling.commons.testing.integration.HttpTest;
 import org.apache.sling.launchpad.webapp.integrationtest.AuthenticatedTestUtil;
 
 /**
@@ -80,6 +81,27 @@ public class UserManagerTestUtil extends AuthenticatedTestUtil {
 	 */
 	public void addUserToGroupAdminGroup(String testUserId) throws IOException {
 		addUserToGroup(testUserId, "GroupAdmin");
+	}
+	
+	/**
+	 * Grant the minimum privilges neede for oak User Management
+	 * 
+	 * @param principalId the principal
+	 */
+	public void grantUserManagementRights(String principalId) throws IOException {
+        String postUrl = HttpTest.HTTP_BASE_URL + "/home.modifyAce.html";
+
+        List<NameValuePair> postParams = new ArrayList<NameValuePair>();
+		postParams.add(new NameValuePair("principalId", principalId));
+		postParams.add(new NameValuePair("privilege@jcr:read", "granted"));
+		postParams.add(new NameValuePair("privilege@rep:write", "granted"));
+		postParams.add(new NameValuePair("privilege@jcr:readAccessControl", "granted"));
+		postParams.add(new NameValuePair("privilege@jcr:modifyAccessControl", "granted"));
+		postParams.add(new NameValuePair("privilege@rep:userManagement", "granted"));
+		
+		Credentials creds = new UsernamePasswordCredentials("admin", "admin");
+        final String info = "Granting principal " + principalId + " user management rights via " + postUrl;
+		assertAuthenticatedPostStatus(creds, postUrl, HttpServletResponse.SC_OK, postParams, info);
 	}
 	
 }
