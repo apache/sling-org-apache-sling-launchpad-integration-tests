@@ -57,7 +57,7 @@ public class ResourceSuperTypeTest extends RenderingTestBase {
 		final TestNode tn= new TestNode(HTTP_BASE_URL + testPath, props);
 		
 		// Without any scripts -> default rendering
-		assertContains(getContent(tn.nodeUrl + ".html", CONTENT_TYPE_HTML), "dumped by HtmlRendererServlet");
+		assertContains(getContent(tn.nodeUrl + ".html", CONTENT_TYPE_HTML), "dumped by HtmlRenderer");
 		
 		// Add supertype script and check that it is used
 		toDelete.add(uploadTestScript(superTypeScriptPath, "rendering-test.esp", "html.esp"));
@@ -100,7 +100,7 @@ public class ResourceSuperTypeTest extends RenderingTestBase {
 		final TestNode tn= new TestNode(HTTP_BASE_URL + testPath, props);
 		
 		// Without any scripts -> default rendering
-		assertContains(getContent(tn.nodeUrl + ".html", CONTENT_TYPE_HTML), "dumped by HtmlRendererServlet");
+		assertContains(getContent(tn.nodeUrl + ".html", CONTENT_TYPE_HTML), "dumped by HtmlRenderer");
 		
 		// Add supertype script and check that it is used
 		toDelete.add(uploadTestScript(superTypeScriptPath, "rendering-test.esp", "html.esp"));

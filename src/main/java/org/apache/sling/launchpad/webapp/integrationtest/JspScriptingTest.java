@@ -68,7 +68,7 @@ public class JspScriptingTest {
     @Retry
     public void testRtNoScript() throws Exception {
         final String content = H.getContent(rtNode.nodeUrl + ".txt", HttpTest.CONTENT_TYPE_PLAIN);
-        assertTrue(content.contains("PlainTextRendererServlet"));
+        assertTrue(content.contains("PlainTextRenderer"));
         assertTrue("Content contains " + rtNode.testText + " (" + content + ")", content.contains(rtNode.testText));
     }
 
@@ -76,7 +76,7 @@ public class JspScriptingTest {
     @Retry
     public void testUnstructuredNoScript() throws Exception {
         final String content = H.getContent(unstructuredNode.nodeUrl + ".txt", HttpTest.CONTENT_TYPE_PLAIN);
-        assertTrue(content.contains("PlainTextRendererServlet"));
+        assertTrue(content.contains("PlainTextRenderer"));
         assertTrue("Content contains " + unstructuredNode.testText + " (" + content + ")", content.contains(unstructuredNode.testText));
     }
 

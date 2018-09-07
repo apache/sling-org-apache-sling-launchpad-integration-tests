@@ -65,7 +65,7 @@ public class NodeTypeBasedRenderingTest extends RenderingTestBase{
         {
             // No script -> default rendering
             final String content = getContent(testNodeUrl + ".html", CONTENT_TYPE_HTML);
-            assertContains(content, "dumped by HtmlRendererServlet");
+            assertContains(content, "dumped by HtmlRenderer");
         }
         
         {

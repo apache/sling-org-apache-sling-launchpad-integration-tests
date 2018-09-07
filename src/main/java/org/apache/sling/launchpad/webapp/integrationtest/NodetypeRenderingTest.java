@@ -51,12 +51,12 @@ public class NodetypeRenderingTest extends RenderingTestBase {
 
     public void testWithoutScriptTxt() throws IOException {
         final String content = getContent(displayUrl + ".txt", CONTENT_TYPE_PLAIN);
-        assertContains(content, "dumped by PlainTextRendererServlet");
+        assertContains(content, "dumped by PlainTextRenderer");
     }
 
     public void testWithoutScriptHtml() throws IOException {
         final String content = getContent(displayUrl + ".html", CONTENT_TYPE_HTML);
-        assertContains(content, "dumped by HtmlRendererServlet");
+        assertContains(content, "dumped by HtmlRenderer");
     }
 
     public void testMiniScriptHtml() throws IOException {
