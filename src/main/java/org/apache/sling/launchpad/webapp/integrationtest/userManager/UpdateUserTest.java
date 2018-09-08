@@ -17,6 +17,7 @@
 package org.apache.sling.launchpad.webapp.integrationtest.userManager;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
@@ -102,6 +103,65 @@ public class UpdateUserTest {
         assertNotNull(json);
         jsonObj = JsonUtil.parseObject(json);
         assertEquals("value", jsonObj.getString("param"));
+	}
+
+	/**
+	 * SLING-7901 test to verify update user delete nested property functionality
+	 */
+	@Test 
+	public void testUpdateUserDeleteProperties() throws IOException, JsonException {
+		testUserId = H.createTestUser();
+		
+        String postUrl = HttpTest.HTTP_BASE_URL + "/system/userManager/user/" + testUserId + ".update.html";
+
+		List<NameValuePair> postParams = new ArrayList<NameValuePair>();
+		postParams.add(new NameValuePair("url", "http://www.apache.org/updated"));
+		// add nested param (SLING-6747)
+		postParams.add(new NameValuePair("nested/param", "value"));
+		Credentials creds = new UsernamePasswordCredentials(testUserId, "testPwd");
+		H.assertAuthenticatedPostStatus(creds, postUrl, HttpServletResponse.SC_OK, postParams, null);
+		
+		//fetch the user profile json to verify the settings
+		String getUrl = HttpTest.HTTP_BASE_URL + "/system/userManager/user/" + testUserId + ".json";
+		H.assertAuthenticatedHttpStatus(creds, getUrl, HttpServletResponse.SC_OK, null); //make sure the profile request returns some data
+		String json = H.getAuthenticatedContent(creds, getUrl, HttpTest.CONTENT_TYPE_JSON, null, HttpServletResponse.SC_OK);
+		assertNotNull(json);
+		JsonObject jsonObj = JsonUtil.parseObject(json);
+		assertEquals("http://www.apache.org/updated", jsonObj.getString("url"));
+		// get path (SLING-6753)
+		String path = jsonObj.getString("path");
+		assertNotNull(path);
+		// retrieve nested property via regular GET servlet
+		getUrl = HttpTest.HTTP_BASE_URL + path + "/nested.json";
+		json = H.getAuthenticatedContent(creds, getUrl, HttpTest.CONTENT_TYPE_JSON, null, HttpServletResponse.SC_OK);
+        assertNotNull(json);
+        jsonObj = JsonUtil.parseObject(json);
+        assertEquals("value", jsonObj.getString("param"));
+        
+        //now remove
+        postParams = new ArrayList<NameValuePair>();
+		postParams.add(new NameValuePair("url@Delete", "true"));
+		// remove nested param 
+		postParams.add(new NameValuePair("nested/param@Delete", "true"));
+		H.assertAuthenticatedPostStatus(creds, postUrl, HttpServletResponse.SC_OK, postParams, null);        
+
+		
+		//and verify
+		getUrl = HttpTest.HTTP_BASE_URL + "/system/userManager/user/" + testUserId + ".json";
+		H.assertAuthenticatedHttpStatus(creds, getUrl, HttpServletResponse.SC_OK, null); //make sure the profile request returns some data
+		json = H.getAuthenticatedContent(creds, getUrl, HttpTest.CONTENT_TYPE_JSON, null, HttpServletResponse.SC_OK);
+		assertNotNull(json);
+		jsonObj = JsonUtil.parseObject(json);
+		assertFalse(jsonObj.containsKey("url"));
+		// get path (SLING-6753)
+		path = jsonObj.getString("path");
+		assertNotNull(path);
+		// retrieve nested property via regular GET servlet
+		getUrl = HttpTest.HTTP_BASE_URL + path + "/nested.json";
+		json = H.getAuthenticatedContent(creds, getUrl, HttpTest.CONTENT_TYPE_JSON, null, HttpServletResponse.SC_OK);
+        assertNotNull(json);
+        jsonObj = JsonUtil.parseObject(json);
+        assertFalse("Nested property should not exist", jsonObj.containsKey("param"));
 	}
 
 	@Test 
