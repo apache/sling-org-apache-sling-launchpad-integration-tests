@@ -74,7 +74,7 @@ public class VersionInfoServletTest extends HttpTestBase {
         assertEquals("Expecting no successors", 0, oneZero.getJsonArray("successors").size());
         assertEquals("Expecting root version predecessor", "jcr:rootVersion", oneZero.getJsonArray("predecessors").getString(0));
         assertEquals("Expecting no labels", 0, oneZero.getJsonArray("labels").size());
-        assertEquals("Expecting true baseVersion", "true", oneZero.getBoolean("baseVersion"));
+        assertEquals("Expecting true baseVersion", true, oneZero.getBoolean("baseVersion"));
     }
 
     public void testHarrayVersionsList() throws Exception {
