@@ -96,7 +96,7 @@ public class AnonymousAccessTest {
         
         try {
             if(anonymousAccessAllowed) {
-                assertContent("Expecting conent when testing under anonymous access subtree");
+                assertContent("Expecting content when testing under anonymous access subtree");
             } else {
                 assertEquals(
                     "Expecting status 404 when testing outside of anonymous access subtree",
