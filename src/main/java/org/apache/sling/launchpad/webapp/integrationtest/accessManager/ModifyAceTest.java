@@ -20,16 +20,22 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.json.JsonArray;
 import javax.json.JsonException;
 import javax.json.JsonObject;
+import javax.json.JsonString;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.httpclient.Credentials;
@@ -866,6 +872,9 @@ public class ModifyAceTest {
 	 * Helper to add or update an ace for testing
 	 */
 	private void addOrUpdateAce(String folderUrl, String principalId, boolean readGranted, String order) throws IOException, JsonException {
+		addOrUpdateAce(folderUrl, principalId, readGranted, order, null);
+	}
+	private void addOrUpdateAce(String folderUrl, String principalId, boolean readGranted, String order, Map<String, Object> restrictions) throws IOException, JsonException {
         String postUrl = folderUrl + ".modifyAce.html";
 
 		//1. create an initial set of privileges
@@ -875,6 +884,28 @@ public class ModifyAceTest {
 		postParams.add(new NameValuePair("privilege@jcr:write", "denied"));
 		if (order != null) {
 			postParams.add(new NameValuePair("order", order));
+		}
+		if (restrictions != null) {
+			Set<Entry<String, Object>> entrySet = restrictions.entrySet();
+			for (Entry<String, Object> entry : entrySet) {
+				Object value = entry.getValue();
+				if (value != null) {
+					String rname = entry.getKey();
+					String paramName = String.format("restriction@%s", rname);
+
+					if (value.getClass().isArray()) {
+						int length = Array.getLength(value);
+						for (int i=0; i < length; i++) {
+							Object rvalue = Array.get(value, i);
+							if (rvalue instanceof String) {
+								postParams.add(new NameValuePair(paramName, (String)rvalue));
+							}
+						}
+					} else if (value instanceof String) {
+						postParams.add(new NameValuePair(paramName, (String)value));
+					}
+				}
+			}
 		}
 		
 		Credentials creds = new UsernamePasswordCredentials("admin", "admin");
@@ -1042,5 +1073,278 @@ public class ModifyAceTest {
 		Object deniedArray = aceObject.get("denied");
 		assertNull(deniedArray);
 	}
+	
+	/**
+	 * SLING-8117 - Test to verify adding an ACE with restriction to
+	 * the ACL
+	 */
+	@Test 
+	public void testAddAceWithRestriction() throws IOException, JsonException {
+		createAceOrderTestFolderWithOneAce();
+
+		testGroupId = H.createTestGroup();
+
+		Map<String, Object> restrictions = new HashMap<>();
+		restrictions.put("rep:glob", "/hello");
+		restrictions.put("rep:itemNames", new String[] {"child1", "child2"});
+
+		addOrUpdateAce(testFolderUrl, testGroupId, true, "first", restrictions);
+
+		//fetch the JSON for the acl to verify the settings.
+		String getUrl = testFolderUrl + ".acl.json";
+
+		Credentials creds = new UsernamePasswordCredentials("admin", "admin");
+		String json = H.getAuthenticatedContent(creds, getUrl, HttpTest.CONTENT_TYPE_JSON, null, HttpServletResponse.SC_OK);
+		assertNotNull(json);
+
+
+		JsonObject jsonObject = JsonUtil.parseObject(json);
+		assertEquals(2, jsonObject.size());
+
+
+		JsonObject group = jsonObject.getJsonObject(testGroupId);
+		assertNotNull(group);
+		assertEquals(testGroupId, group.getString("principal"));
+		assertEquals(0, group.getInt("order"));
+		
+		//verify restrictions are returned
+		assertTrue(group.containsKey("restrictions"));
+		JsonObject restrictionsObj = group.getJsonObject("restrictions");
+		assertNotNull(restrictionsObj);
+		
+		Object repGlob = restrictionsObj.get("rep:glob");
+		assertNotNull(repGlob);
+		assertTrue(repGlob instanceof JsonString);
+		assertEquals("/hello", ((JsonString)repGlob).getString());
+		
+		Object itemNames = restrictionsObj.get("rep:itemNames");
+		assertNotNull(itemNames);
+		assertTrue(itemNames instanceof JsonArray);
+		assertEquals(2, ((JsonArray)itemNames).size());
+		
+		
+		JsonObject user =  jsonObject.getJsonObject(testUserId);
+		assertNotNull(user);
+		assertEquals(testUserId, user.getString("principal"));
+		assertEquals(1, user.getInt("order"));
+		assertFalse(user.containsKey("restrictions"));
+
+	}	
+
+	/**
+	 * SLING-8117 - Test to verify merging an ACE with an existing restriction to
+	 * the ACL
+	 */
+	@Test 
+	public void testUpdateAceToMergeNewRestriction() throws IOException, JsonException {
+		createAceOrderTestFolderWithOneAce();
+
+		testGroupId = H.createTestGroup();
+
+		//first create an ACE with the first restriction
+		Map<String, Object> restrictions = new HashMap<>();
+		restrictions.put("rep:glob", "/hello");
+
+		addOrUpdateAce(testFolderUrl, testGroupId, true, "first", restrictions);
+
+		//fetch the JSON for the acl to verify the settings.
+		String getUrl = testFolderUrl + ".acl.json";
+
+		Credentials creds = new UsernamePasswordCredentials("admin", "admin");
+		String json = H.getAuthenticatedContent(creds, getUrl, HttpTest.CONTENT_TYPE_JSON, null, HttpServletResponse.SC_OK);
+		assertNotNull(json);
+
+		JsonObject jsonObject = JsonUtil.parseObject(json);
+		assertEquals(2, jsonObject.size());
+
+		JsonObject group = jsonObject.getJsonObject(testGroupId);
+		assertNotNull(group);
+		assertEquals(testGroupId, group.getString("principal"));
+		assertEquals(0, group.getInt("order"));
+		
+		//verify restrictions are returned
+		assertTrue(group.containsKey("restrictions"));
+		JsonObject restrictionsObj = group.getJsonObject("restrictions");
+		assertNotNull(restrictionsObj);
+		assertEquals(1, restrictionsObj.size());
+		
+		Object repGlob = restrictionsObj.get("rep:glob");
+		assertNotNull(repGlob);
+		assertTrue(repGlob instanceof JsonString);
+		assertEquals("/hello", ((JsonString)repGlob).getString());
+		
+		
+		
+		//second update the ACE with a second restriction
+		Map<String, Object> restrictions2 = new HashMap<>();
+		restrictions2.put("rep:itemNames", new String[] {"child1", "child2"});
+
+		addOrUpdateAce(testFolderUrl, testGroupId, true, "first", restrictions2);
+		
+		String json2 = H.getAuthenticatedContent(creds, getUrl, HttpTest.CONTENT_TYPE_JSON, null, HttpServletResponse.SC_OK);
+		assertNotNull(json2);
+
+		JsonObject jsonObject2 = JsonUtil.parseObject(json2);
+		assertEquals(2, jsonObject2.size());
+
+		JsonObject group2 = jsonObject2.getJsonObject(testGroupId);
+		assertNotNull(group2);
+		assertEquals(testGroupId, group2.getString("principal"));
+		assertEquals(0, group2.getInt("order"));
+		
+		//verify restrictions are returned
+		assertTrue(group2.containsKey("restrictions"));
+		JsonObject restrictionsObj2 = group2.getJsonObject("restrictions");
+		assertNotNull(restrictionsObj2);
+		assertEquals(2, restrictionsObj2.size());
+		
+		Object repGlob2 = restrictionsObj2.get("rep:glob");
+		assertNotNull(repGlob2);
+		assertTrue(repGlob2 instanceof JsonString);
+		assertEquals("/hello", ((JsonString)repGlob2).getString());
+		
+		Object itemNames2 = restrictionsObj2.get("rep:itemNames");
+		assertNotNull(itemNames2);
+		assertTrue(itemNames2 instanceof JsonArray);
+		assertEquals(2, ((JsonArray)itemNames2).size());
+	}
+	
+	/**
+	 * SLING-8117 - Test to verify removing a restriction from an ACE
+	 */
+	@Test 
+	public void testUpdateAceToRemoveRestriction() throws IOException, JsonException {
+		createAceOrderTestFolderWithOneAce();
+
+		testGroupId = H.createTestGroup();
+
+		//first create an ACE with the restrictions
+		Map<String, Object> restrictions = new HashMap<>();
+		restrictions.put("rep:glob", "/hello");
+		restrictions.put("rep:itemNames", new String[] {"child1", "child2"});
+
+		addOrUpdateAce(testFolderUrl, testGroupId, true, "first", restrictions);
+
+		//fetch the JSON for the acl to verify the settings.
+		String getUrl = testFolderUrl + ".acl.json";
+
+		Credentials creds = new UsernamePasswordCredentials("admin", "admin");
+		String json = H.getAuthenticatedContent(creds, getUrl, HttpTest.CONTENT_TYPE_JSON, null, HttpServletResponse.SC_OK);
+		assertNotNull(json);
+
+		JsonObject jsonObject = JsonUtil.parseObject(json);
+		assertEquals(2, jsonObject.size());
+
+		JsonObject group = jsonObject.getJsonObject(testGroupId);
+		assertNotNull(group);
+		assertEquals(testGroupId, group.getString("principal"));
+		assertEquals(0, group.getInt("order"));
+		
+		//verify restrictions are returned
+		assertTrue(group.containsKey("restrictions"));
+		JsonObject restrictionsObj = group.getJsonObject("restrictions");
+		assertNotNull(restrictionsObj);
+		
+		Object repGlob = restrictionsObj.get("rep:glob");
+		assertNotNull(repGlob);
+		assertTrue(repGlob instanceof JsonString);
+		assertEquals("/hello", ((JsonString)repGlob).getString());
+		
+		Object itemNames = restrictionsObj.get("rep:itemNames");
+		assertNotNull(itemNames);
+		assertTrue(itemNames instanceof JsonArray);
+		assertEquals(2, ((JsonArray)itemNames).size());
+
+		
+		//second remove the restrictions
+		Map<String, Object> restrictions2 = new HashMap<>();
+		restrictions2.put("rep:glob@Delete", "true");
+		restrictions2.put("rep:itemNames@Delete", new String[] {"value does not", "matter"});
+		addOrUpdateAce(testFolderUrl, testGroupId, true, "first", restrictions2);
+
+		String json2 = H.getAuthenticatedContent(creds, getUrl, HttpTest.CONTENT_TYPE_JSON, null, HttpServletResponse.SC_OK);
+		assertNotNull(json2);
+
+		JsonObject jsonObject2 = JsonUtil.parseObject(json2);
+		assertEquals(2, jsonObject2.size());
+
+		JsonObject group2 = jsonObject2.getJsonObject(testGroupId);
+		assertNotNull(group2);
+		assertEquals(testGroupId, group2.getString("principal"));
+		assertEquals(0, group2.getInt("order"));
+		
+		//verify no restrictions are returned
+		assertFalse(group2.containsKey("restrictions"));
+	}	
+
+	/**
+	 * SLING-8117 - Test to verify removing a restriction from an ACE does not happen
+	 * if a new value with the same name has also been supplied
+	 */
+	@Test 
+	public void testUpdateAceToRemoveRestrictionWithConflict() throws IOException, JsonException {
+		createAceOrderTestFolderWithOneAce();
+
+		testGroupId = H.createTestGroup();
+
+		//first create an ACE with the restrictions
+		Map<String, Object> restrictions = new HashMap<>();
+		restrictions.put("rep:glob", "/hello");
+
+		addOrUpdateAce(testFolderUrl, testGroupId, true, "first", restrictions);
+
+		//fetch the JSON for the acl to verify the settings.
+		String getUrl = testFolderUrl + ".acl.json";
+
+		Credentials creds = new UsernamePasswordCredentials("admin", "admin");
+		String json = H.getAuthenticatedContent(creds, getUrl, HttpTest.CONTENT_TYPE_JSON, null, HttpServletResponse.SC_OK);
+		assertNotNull(json);
+
+		JsonObject jsonObject = JsonUtil.parseObject(json);
+		assertEquals(2, jsonObject.size());
+
+		JsonObject group = jsonObject.getJsonObject(testGroupId);
+		assertNotNull(group);
+		assertEquals(testGroupId, group.getString("principal"));
+		assertEquals(0, group.getInt("order"));
+		
+		//verify restrictions are returned
+		assertTrue(group.containsKey("restrictions"));
+		JsonObject restrictionsObj = group.getJsonObject("restrictions");
+		assertNotNull(restrictionsObj);
+		
+		Object repGlob = restrictionsObj.get("rep:glob");
+		assertNotNull(repGlob);
+		assertTrue(repGlob instanceof JsonString);
+		assertEquals("/hello", ((JsonString)repGlob).getString());
+
+		
+		//second remove the restriction and also supply a new value of the same
+		Map<String, Object> restrictions2 = new HashMap<>();
+		restrictions2.put("rep:glob@Delete", "true");
+		restrictions2.put("rep:glob", "/hello_again");
+		addOrUpdateAce(testFolderUrl, testGroupId, true, "first", restrictions2);
+
+		String json2 = H.getAuthenticatedContent(creds, getUrl, HttpTest.CONTENT_TYPE_JSON, null, HttpServletResponse.SC_OK);
+		assertNotNull(json2);
+
+		JsonObject jsonObject2 = JsonUtil.parseObject(json2);
+		assertEquals(2, jsonObject2.size());
+
+		JsonObject group2 = jsonObject2.getJsonObject(testGroupId);
+		assertNotNull(group2);
+		assertEquals(testGroupId, group2.getString("principal"));
+		assertEquals(0, group2.getInt("order"));
+		
+		//verify restrictions are returned
+		assertTrue(group2.containsKey("restrictions"));
+		JsonObject restrictionsObj2 = group2.getJsonObject("restrictions");
+		assertNotNull(restrictionsObj2);
+		
+		Object repGlob2 = restrictionsObj2.get("rep:glob");
+		assertNotNull(repGlob2);
+		assertTrue(repGlob2 instanceof JsonString);
+		assertEquals("/hello_again", ((JsonString)repGlob2).getString());
+	}	
 	
 }
