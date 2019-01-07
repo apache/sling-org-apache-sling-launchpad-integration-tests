@@ -206,4 +206,25 @@ public class PostServletAtMoveTest extends HttpTestBase {
         assertJavascript("Hello", content, "out.println(data.text)");
     }
 
+    public void testMoveWithSameNameProperty() throws IOException {
+        final String testPath = TEST_BASE_PATH + "/same_name_property/" + System.currentTimeMillis();
+        Map<String, String> props = new HashMap<String, String>();
+        props.put("text", testPath.toUpperCase());
+        testClient.createNode(HTTP_BASE_URL + testPath + "/src", props);
+
+        // SLING-8186: if @Delete points to the name of a child
+        // node of the parent after the move, that child node is deleted.
+        // In this case it's the moved source node that's deleted
+        final String [] toDelete = { "NOTHING", "./dest" };
+        final int [] status = { 200, 404 };
+
+        for(int i=0; i < toDelete.length; i++) {
+            props.clear();
+            props.put(toDelete[i] + "@Delete", "true");
+            props.put(testPath + "/dest@MoveFrom", testPath + "/src");
+            testClient.createNode(HTTP_BASE_URL + testPath, props);
+            assertHttpStatus(HTTP_BASE_URL + testPath + "/dest.json", status[i], "for toDelete=" + toDelete[i]);
+        }
+    }
+
  }
