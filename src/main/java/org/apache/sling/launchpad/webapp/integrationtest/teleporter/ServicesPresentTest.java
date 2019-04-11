@@ -30,7 +30,7 @@ import static org.junit.Assert.fail;
 public class ServicesPresentTest {
 
     public static final String[] services = new String[] {
-            "org.apache.sling.hc.api.execution.HealthCheckExecutor"
+            "org.apache.felix.hc.api.execution.HealthCheckExecutor"
     };
 
     @Rule
@@ -41,7 +41,7 @@ public class ServicesPresentTest {
         BundleContext bundleContext = teleporter.getService(BundleContext.class);
         StringBuilder stringBuilder = new StringBuilder();
         for (String service : services) {
-            ServiceReference sr = bundleContext.getServiceReference(service);
+            ServiceReference<?> sr = bundleContext.getServiceReference(service);
             if (sr == null) {
                 stringBuilder.append("    ").append(service).append("\n");
             }
