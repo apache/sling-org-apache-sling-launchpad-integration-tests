@@ -291,12 +291,12 @@
     <dependency>
       <groupId>org.apache.sling</groupId>
       <artifactId>org.apache.sling.junit.core</artifactId>
-      <version>1.0.26</version>
+      <version>1.0.28</version>
     </dependency>
     <dependency>
       <groupId>org.apache.sling</groupId>
       <artifactId>org.apache.sling.junit.teleporter</artifactId>
-      <version>1.0.18</version>
+      <version>1.0.20</version>
       <exclusions>
       	<exclusion>
       		<groupId>commons-io</groupId>
