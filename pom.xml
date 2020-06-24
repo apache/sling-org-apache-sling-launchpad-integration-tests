@@ -210,6 +210,18 @@
       <scope>compile</scope>
     </dependency>
 
+    <!-- Pin some more Jackrabbit versions, to ensure all module versions are aligned -->
+    <dependency>
+      <groupId>org.apache.jackrabbit</groupId>
+      <artifactId>jackrabbit-api</artifactId>
+      <version>${jackrabbit.version}</version>
+    </dependency>    
+    <dependency>
+      <groupId>org.apache.jackrabbit</groupId>
+      <artifactId>jackrabbit-core</artifactId>
+      <version>${jackrabbit.version}</version>
+    </dependency>    
+
     <!-- Dependencies for the Test Build and Run -->
     <dependency>
       <groupId>org.apache.sling</groupId>
