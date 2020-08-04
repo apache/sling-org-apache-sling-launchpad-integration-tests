@@ -16,19 +16,14 @@
  */
 package org.apache.sling.launchpad.webapp.integrationtest.servlets.resolver.errorhandler;
 
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
-
 import org.apache.commons.httpclient.NameValuePair;
-import org.apache.sling.launchpad.webapp.integrationtest.RenderingTestBase;
 import org.apache.sling.servlets.post.SlingPostConstants;
+import org.apache.sling.launchpad.webapp.integrationtest.RenderingTestBase;
 
 /** Test the sling error handling mechanism http://sling.apache.org/site/errorhandling.html*/
 public class ErrorHandlingTest extends RenderingTestBase {
@@ -63,7 +58,6 @@ public class ErrorHandlingTest extends RenderingTestBase {
 		testClient.mkdirs(HTTP_BASE_URL, ERROR_HANDLER_PATH);
 		testClient.mkdirs(HTTP_BASE_URL, TEST_ROOT+"/"+THROW_ERROR_PATH);
 		uploadTestScript("servlets/errorhandler/404.jsp", "sling/servlet/errorhandler/404.jsp");
-		uploadTestScript("servlets/errorhandler/json.404.jsp", "sling/servlet/errorhandler/json.404.jsp");
 		uploadTestScript("servlets/errorhandler/Throwable.jsp", "sling/servlet/errorhandler/Throwable.jsp");
 		uploadTestScript("servlets/errorhandler/500.jsp", "sling/servlet/errorhandler/500.jsp");
 		uploadTestScript("servlets/errorhandler/401.jsp", "sling/servlet/errorhandler/401.jsp");
@@ -177,23 +171,4 @@ public class ErrorHandlingTest extends RenderingTestBase {
         assertWithRetries(url, 500, expected, HTTP_METHOD_POST, params);
 	}
 
-	/**
-	 * Test an error handling script registered for a json extension
-	 */
-	public void test_404_errorhandling_JSON_extension() throws Throwable {
-		final String url = testNodePath + NOT_EXISTING_NODE_PATH + ".json";
-		List <NameValuePair> params=new ArrayList<NameValuePair>();
-        String json = getContent(url, CONTENT_TYPE_JSON, params, 404, HTTP_METHOD_GET);
-        		
-        // assert the error content is right.
-      	JsonObject jsonObj = null;
-        try (JsonReader reader = Json.createReader(new StringReader(json))) {
-        	jsonObj = reader.readObject();
-        }
-        assertNotNull(jsonObj);
-        assertEquals(404, jsonObj.getInt("status"));
-        assertEquals("Resource at '/apps/testNode/notExisting.json' not found: No resource found", jsonObj.getString("message"));
-        assertEquals("/apps/testNode/notExisting.json", jsonObj.getString("request_uri"));
-	}
-	
 }
