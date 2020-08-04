@@ -43,6 +43,7 @@ import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.sling.commons.testing.integration.HttpTest;
 import org.apache.sling.launchpad.webapp.integrationtest.util.JsonUtil;
+import org.apache.sling.servlets.post.JSONResponse;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -1347,4 +1348,63 @@ public class ModifyAceTest {
 		assertEquals("/hello_again", ((JsonString)repGlob2).getString());
 	}	
 	
+	/**
+	 * SLING-8809 - Test to verify submitting an invalid principalId returns a 
+	 * good error message instead of a NullPointerException
+	 */
+	@Test 
+	public void testModifyAceForInvalidUser() throws IOException, JsonException {
+		String invalidUserId = "notRealUser123";
+		
+		testFolderUrl = H.createTestFolder();
+		
+        String postUrl = testFolderUrl + ".modifyAce.json";
+
+		List<NameValuePair> postParams = new ArrayList<NameValuePair>();
+		postParams.add(new NameValuePair(":http-equiv-accept", JSONResponse.RESPONSE_CONTENT_TYPE));
+		postParams.add(new NameValuePair("principalId", invalidUserId));
+		postParams.add(new NameValuePair("privilege@jcr:read", "granted"));
+		postParams.add(new NameValuePair("privilege@jcr:write", "denied"));
+		postParams.add(new NameValuePair("privilege@jcr:modifyAccessControl", "bogus")); //invalid value should be ignored.
+		
+		Credentials creds = new UsernamePasswordCredentials("admin", "admin");
+		String json = H.getAuthenticatedPostContent(creds, postUrl, HttpTest.CONTENT_TYPE_JSON, postParams, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+		assertNotNull(json);
+
+		JsonObject jsonObject = JsonUtil.parseObject(json);
+		assertEquals("javax.jcr.RepositoryException: Invalid principalId was submitted.", jsonObject.getString("status.message"));
+	}
+
+	/**
+	 * SLING-8811 - Test to verify that the "changes" list of a modifyAce response
+	 * returns the list of principals that were changed
+	 */
+	@Test 
+	public void testModifyAceChangesInResponse() throws IOException, JsonException {
+		testUserId = H.createTestUser();
+		
+		testFolderUrl = H.createTestFolder();
+		
+        String postUrl = testFolderUrl + ".modifyAce.json";
+
+		List<NameValuePair> postParams = new ArrayList<NameValuePair>();
+		postParams.add(new NameValuePair(":http-equiv-accept", JSONResponse.RESPONSE_CONTENT_TYPE));
+		postParams.add(new NameValuePair("principalId", testUserId));
+		postParams.add(new NameValuePair("privilege@jcr:read", "granted"));
+		postParams.add(new NameValuePair("privilege@jcr:write", "denied"));
+		postParams.add(new NameValuePair("privilege@jcr:modifyAccessControl", "bogus")); //invalid value should be ignored.
+		
+		Credentials creds = new UsernamePasswordCredentials("admin", "admin");
+		String json = H.getAuthenticatedPostContent(creds, postUrl, HttpTest.CONTENT_TYPE_JSON, postParams, HttpServletResponse.SC_OK);
+		assertNotNull(json);
+
+		JsonObject jsonObject = JsonUtil.parseObject(json);
+		JsonArray changesArray = jsonObject.getJsonArray("changes");
+		assertNotNull(changesArray);
+		assertEquals(1, changesArray.size());
+		JsonObject change = changesArray.getJsonObject(0);
+		assertEquals("modified", change.getString("type"));
+		assertEquals(testUserId, change.getString("argument"));
+	}
+
 }
