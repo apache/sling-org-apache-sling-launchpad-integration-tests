@@ -30,6 +30,8 @@ import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.sling.commons.testing.integration.HttpTest;
 import org.apache.sling.launchpad.webapp.integrationtest.util.JsonUtil;
+import org.apache.sling.servlets.post.JSONResponse;
+import org.junit.Test;
 
 /**
  * Tests for the 'removeAce' Sling POST operation
@@ -218,5 +220,83 @@ public class RemoveAcesTest extends AccessManagerTestUtil {
         JsonObject jsonObject = JsonUtil.parseObject(json);
 		assertNotNull(jsonObject);
 	}
+
+	/**
+	 * SLING-8810 - Test that a attempt to remove an ACE from a
+	 * node that does not yet have an AccessControlList responds
+	 * in a consistent way to other scenarios
+	 */
+	@Test 
+	public void testRemoveAceWhenAccessControlListDoesNotExist() throws IOException, JsonException {
+		testUserId = createTestUser();
+		testFolderUrl = createTestFolder();
+
+        String postUrl = testFolderUrl + ".deleteAce.json";
+
+		List<NameValuePair> postParams = new ArrayList<NameValuePair>();
+		postParams.add(new NameValuePair(":http-equiv-accept", JSONResponse.RESPONSE_CONTENT_TYPE));
+		postParams.add(new NameValuePair(":applyTo", testUserId));
+		
+		Credentials creds = new UsernamePasswordCredentials("admin", "admin");
+		String json = getAuthenticatedPostContent(creds, postUrl, HttpTest.CONTENT_TYPE_JSON, postParams, HttpServletResponse.SC_OK);
+		assertNotNull(json);
+
+		JsonObject jsonObject = JsonUtil.parseObject(json);
+		JsonArray changesArray = jsonObject.getJsonArray("changes");
+		assertNotNull(changesArray);
+		assertEquals(0, changesArray.size());
+	}
+	
+	/**
+	 * SLING-8812 - Test to verify submitting an invalid principalId returns a 
+	 * good error message instead of a NullPointerException
+	 */
+	@Test 
+	public void testRemoveAceForInvalidUser() throws IOException, JsonException {
+		String invalidUserId = "notRealUser123";
+		
+		String folderUrl = createFolderWithAces(true);
+
+        String postUrl = folderUrl + ".deleteAce.json";
+
+		List<NameValuePair> postParams = new ArrayList<NameValuePair>();
+		postParams.add(new NameValuePair(":http-equiv-accept", JSONResponse.RESPONSE_CONTENT_TYPE));
+		postParams.add(new NameValuePair(":applyTo", invalidUserId));
+		
+		Credentials creds = new UsernamePasswordCredentials("admin", "admin");
+		String json = getAuthenticatedPostContent(creds, postUrl, HttpTest.CONTENT_TYPE_JSON, postParams, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+		assertNotNull(json);
+
+		JsonObject jsonObject = JsonUtil.parseObject(json);
+		assertEquals("javax.jcr.RepositoryException: Invalid principalId was submitted.", jsonObject.getString("status.message"));
+	}
+
+	/**
+	 * SLING-8811 - Test to verify that the "changes" list of a modifyAce response
+	 * returns the list of principals that were changed
+	 */
+	@Test 
+	public void testRemoveAceChangesInResponse() throws IOException, JsonException {
+		String folderUrl = createFolderWithAces(true);
+		
+        String postUrl = folderUrl + ".deleteAce.json";
+
+		List<NameValuePair> postParams = new ArrayList<NameValuePair>();
+		postParams.add(new NameValuePair(":http-equiv-accept", JSONResponse.RESPONSE_CONTENT_TYPE));
+		postParams.add(new NameValuePair(":applyTo", testUserId));
+		
+		Credentials creds = new UsernamePasswordCredentials("admin", "admin");
+		String json = getAuthenticatedPostContent(creds, postUrl, HttpTest.CONTENT_TYPE_JSON, postParams, HttpServletResponse.SC_OK);
+		assertNotNull(json);
+
+		JsonObject jsonObject = JsonUtil.parseObject(json);
+		JsonArray changesArray = jsonObject.getJsonArray("changes");
+		assertNotNull(changesArray);
+		assertEquals(1, changesArray.size());
+		JsonObject change = changesArray.getJsonObject(0);
+		assertEquals("deleted", change.getString("type"));
+		assertEquals(testUserId, change.getString("argument"));
+	}
+	
 }
 
