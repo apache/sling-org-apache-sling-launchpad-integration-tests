@@ -304,7 +304,7 @@ public class UserPrivilegesInfoTest {
 	public void testCanRemoveUser() throws IOException, JsonException {
 		testUserId = H.createTestUser();
 
-		//1. verify user can not remove themselves
+		//1. verify user can remove themselves as they have jcr:all permissions by default in the starter
 		String getUrl = HttpTest.HTTP_BASE_URL + "/system/userManager/user/" + testUserId + ".privileges-info.json";
 
 		//fetch the JSON for the test page to verify the settings.
@@ -314,8 +314,8 @@ public class UserPrivilegesInfoTest {
 		assertNotNull(json);
 		JsonObject jsonObj = JsonUtil.parseObject(json);
 		
-		//user can not remove themselves
-		assertEquals(false, jsonObj.getBoolean("canRemove"));
+		//user can remove themself
+		assertEquals(true, jsonObj.getBoolean("canRemove"));
 		
 		
 		//2. now try another user 
