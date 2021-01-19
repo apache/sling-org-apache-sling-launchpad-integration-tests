@@ -169,7 +169,7 @@ public class ErrorHandlingTest extends RenderingTestBase {
   	}
 	
 	public void test_errorhandling_POST_operation_SlingPostServlet() throws Throwable{
-		final String expected = "Exception thrown - custom error page";
+		final String expected = "Internal Server Error (500) - custom error page";
 		final String url =  testNodePath +".html";
 		List <NameValuePair> params=new ArrayList<NameValuePair>();
         params.add(new NameValuePair(SlingPostConstants.RP_OPERATION,"notExistingOperation"));
