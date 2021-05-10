@@ -192,8 +192,8 @@ public class PostServletCreateTest extends HttpTestBase {
 		String location = postUrl + SLASH;
 		List<NameValuePair> postParams = new ArrayList<NameValuePair>();
 		postParams.add(new NameValuePair(SlingPostConstants.RP_NODE_NAME, "exactNodeName*"));
-		//expect a 500 status since the name is invalid
-		assertPostStatus(location, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, postParams, null);
+		//expect a 409 status since the name is invalid
+		assertPostStatus(location, HttpServletResponse.SC_CONFLICT, postParams, null);
     }
 
     /**
@@ -252,10 +252,10 @@ public class PostServletCreateTest extends HttpTestBase {
         list.add(new NameValuePair("prop", "value"));
         list.add(new NameValuePair("jcr:primaryType", "nt:unstructured"));
 
-        assertPostStatus(childUrl, 500, list,
+        assertPostStatus(childUrl, HttpServletResponse.SC_CONFLICT, list,
                 "Response to creating a child under nt:file should fail.");
         // we shouldn't check for a specific exception as that one is implementation specific (see SLING-2763)
-        // a result of 500 is enough.
+        // a result of 409 is enough.
     }
 
 }
