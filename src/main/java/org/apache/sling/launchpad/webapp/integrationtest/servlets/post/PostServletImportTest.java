@@ -323,7 +323,7 @@ public class PostServletImportTest extends HttpTestBase {
         postParams.add(new NameValuePair(SlingPostConstants.RP_REPLACE_PROPERTIES, "true"));
         postParams.add(new NameValuePair(SlingPostConstants.RP_AUTO_CHECKOUT, "false"));
         postParams.add(new NameValuePair(SlingPostConstants.RP_CONTENT, "{ \"abc\": \"def2\" }"));
-        assertPostStatus(importedNodeUrl, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, postParams, "Expected error from VersionException");
+        assertPostStatus(importedNodeUrl, HttpServletResponse.SC_CONFLICT, postParams, "Expected error from VersionException");
 
 		//3. now try an update with the :autoCheckout value set to true
         postParams.clear();
@@ -760,9 +760,9 @@ public class PostServletImportTest extends HttpTestBase {
 		postParams.add(new NameValuePair(SlingPostConstants.RP_CONTENT_TYPE, "json"));
 		postParams.add(new NameValuePair(SlingPostConstants.RP_REDIRECT_TO, SERVLET_CONTEXT + testPath + "/*"));
 
-        //expect a 500 status since the name is invalid
+        //expect a 409 status since the name is invalid
         String location = HTTP_BASE_URL + testPath;
-		assertPostStatus(location, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, postParams, null);
+		assertPostStatus(location, HttpServletResponse.SC_CONFLICT, postParams, null);
     }
 
     /**
