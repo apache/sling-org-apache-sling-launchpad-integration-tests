@@ -615,7 +615,7 @@ public class PostServletCopyTest extends HttpTestBase {
         opt.add(new NameValuePair(SlingPostConstants.RP_OPERATION, SlingPostConstants.OPERATION_COPY));
         opt.add(new NameValuePair(SlingPostConstants.RP_DEST, childPath));
         
-        final int expectedStatus = HttpServletResponse.SC_CONFLICT;
+        final int expectedStatus = HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
         assertPostStatus(testRoot, expectedStatus, opt, "Expecting status " + expectedStatus);
     }
 }

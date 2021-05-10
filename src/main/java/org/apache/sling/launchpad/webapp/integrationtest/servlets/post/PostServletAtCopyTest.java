@@ -228,7 +228,7 @@ public class PostServletAtCopyTest extends HttpTestBase {
         final List<NameValuePair> opt = new ArrayList<NameValuePair>();
         opt.add(new NameValuePair(testPath + "./@CopyFrom", "../"));
         
-        final int expectedStatus = HttpServletResponse.SC_CONFLICT;
+        final int expectedStatus = HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
         assertPostStatus(HTTP_BASE_URL + testPath, expectedStatus, opt, "Expecting status " + expectedStatus);
     }
  }
