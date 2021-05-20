@@ -35,97 +35,96 @@ import org.apache.sling.servlets.post.impl.helper.MediaRangeList;
 public class PostSendErrorTest extends HttpTestBase {
 
     private String postPath = "PostSendErrorTest/" + System.currentTimeMillis();
-    
-	/**
-	 * expect html response, :sendError=true and the operation was not successful
-	 */
+
+    /**
+     * expect html response, :sendError=true and the operation was not successful
+     */
     public void testNotSuccessfulWithHtmlResponseAndSendError() throws IOException {
-    	// clear state to do the call as anonymous
-    	httpClient.getState().clear();
-    	
+        // clear state to do the call as anonymous
+        httpClient.getState().clear();
+
         final String resPath = "/" + postPath;
         final String postUrl = HTTP_BASE_URL + resPath;
         String content = getContent(postUrl, CONTENT_TYPE_HTML, 
-        		Arrays.asList(new NameValuePair(SlingPostConstants.RP_SEND_ERROR, "true"),
-        				new NameValuePair(SlingPostConstants.RP_NODE_NAME_HINT, "test")),
-        		500, "POST");
+                Arrays.asList(new NameValuePair(SlingPostConstants.RP_SEND_ERROR, "true"),
+                        new NameValuePair(SlingPostConstants.RP_NODE_NAME_HINT, "test")),
+                500, "POST");
         assertNotNull(content);
-        
+
         // check the html content matches what would be sent from the DefaultErrorHandlingServlet
         Pattern regex = Pattern.compile("The requested URL \\/PostSendErrorTest\\/.* resulted in an error in org.apache.sling.servlets.post.impl.SlingPostServlet\\.", Pattern.MULTILINE);
         assertTrue("Expected error message", regex.matcher(content).find());
     }
-    
-	/**
-	 * expect html response, :sendError=true and the operation was successful
-	 */
+
+    /**
+     * expect html response, :sendError=true and the operation was successful
+     */
     public void testSuccessfulWithHtmlResponseAndSendError() throws IOException {
         final String resPath = "/" + postPath;
         final String postUrl = HTTP_BASE_URL + resPath;
         String content = getContent(postUrl, CONTENT_TYPE_HTML, 
-        		Arrays.asList(new NameValuePair(SlingPostConstants.RP_SEND_ERROR, "true"),
-        				new NameValuePair(SlingPostConstants.RP_NODE_NAME_HINT, "test")),
-        		201, "POST");
+                Arrays.asList(new NameValuePair(SlingPostConstants.RP_SEND_ERROR, "true"),
+                        new NameValuePair(SlingPostConstants.RP_NODE_NAME_HINT, "test")),
+                201, "POST");
         assertNotNull(content);
         urlsToDelete.add(postUrl); // remove created nodes after test
-        
+
         // check the html content matches what would be sent from the SlingPostServlet
         assertTrue("Expected status div", content.contains("<div id=\"Status\">201</div>"));
         assertTrue("Expected message div", content.contains("<div id=\"Message\">Created</div>"));
         Pattern regex = Pattern.compile("<div id=\"Path\">\\/PostSendErrorTest\\/.*<\\/div>", Pattern.MULTILINE);
         assertTrue("Expected created path div", regex.matcher(content).find());
-    }    
+    }
 
-	/**
-	 * expect json response, :sendError=true and the operation was not successful
-	 */
-// NOTE: this test requires the SLING-10021 fix, so uncomment once "Servlets Resolver 2.7.14" or later are in the starter
-//    public void testNotSuccessfulWithJsonResponseAndSendError() throws IOException {
-//    	// clear state to do the call as anonymous
-//    	httpClient.getState().clear();
-//    	
-//        final String resPath = "/" + postPath;
-//        final String postUrl = HTTP_BASE_URL + resPath;
-//        String content = getContent(postUrl, CONTENT_TYPE_JSON, 
-//        		Arrays.asList(new NameValuePair(SlingPostConstants.RP_SEND_ERROR, "true"),
-//        				new NameValuePair(SlingPostConstants.RP_NODE_NAME_HINT, "test"),
-//        				new NameValuePair(MediaRangeList.PARAM_ACCEPT, "application/json,/;q=0.9")),
-//        		500, "POST");
-//        assertNotNull(content);
-//
-//        // check the json content matches what would be sent from the DefaultErrorHandlingServlet
-//        try (Reader reader = new StringReader(content);
-//        		JsonReader jsonReader = Json.createReader(reader)) {
-//            JsonObject jsonObj = jsonReader.readObject();
-//            assertEquals(500, jsonObj.getInt("status"));
-//            assertEquals(resPath, jsonObj.getString("requestUri"));
-//            assertEquals("org.apache.sling.servlets.post.impl.SlingPostServlet", jsonObj.getString("servletName"));
-//            assertEquals("java.lang.IllegalArgumentException: Can't create child on a synthetic root", jsonObj.getString("message"));
-//        }
-//    }    
+    /**
+     * expect json response, :sendError=true and the operation was not successful
+     */
+    public void testNotSuccessfulWithJsonResponseAndSendError() throws IOException {
+        // clear state to do the call as anonymous
+        httpClient.getState().clear();
 
-	/**
-	 * expect json response, :sendError=true and the operation was successful
-	 **/
+        final String resPath = "/" + postPath;
+        final String postUrl = HTTP_BASE_URL + resPath;
+        String content = getContent(postUrl, CONTENT_TYPE_JSON, 
+                Arrays.asList(new NameValuePair(SlingPostConstants.RP_SEND_ERROR, "true"),
+                        new NameValuePair(SlingPostConstants.RP_NODE_NAME_HINT, "test"),
+                        new NameValuePair(MediaRangeList.PARAM_ACCEPT, "application/json,/;q=0.9")),
+                500, "POST");
+        assertNotNull(content);
+
+        // check the json content matches what would be sent from the DefaultErrorHandlingServlet
+        try (Reader reader = new StringReader(content);
+                JsonReader jsonReader = Json.createReader(reader)) {
+            JsonObject jsonObj = jsonReader.readObject();
+            assertEquals(500, jsonObj.getInt("status"));
+            assertEquals(resPath, jsonObj.getString("requestUri"));
+            assertEquals("org.apache.sling.servlets.post.impl.SlingPostServlet", jsonObj.getString("servletName"));
+            assertEquals("java.lang.IllegalArgumentException: Can't create child on a synthetic root", jsonObj.getString("message"));
+        }
+    }
+
+    /**
+     * expect json response, :sendError=true and the operation was successful
+     **/
     public void testSuccessfulWithJsonResponseAndSendError() throws IOException {
         final String resPath = "/" + postPath;
         final String postUrl = HTTP_BASE_URL + resPath;
         String content = getContent(postUrl, CONTENT_TYPE_JSON, 
-        		Arrays.asList(new NameValuePair(SlingPostConstants.RP_SEND_ERROR, "true"),
-        				new NameValuePair(SlingPostConstants.RP_NODE_NAME_HINT, "test"),
-        				new NameValuePair(MediaRangeList.PARAM_ACCEPT, "application/json,/;q=0.9")),
-        		201, "POST");
+                Arrays.asList(new NameValuePair(SlingPostConstants.RP_SEND_ERROR, "true"),
+                        new NameValuePair(SlingPostConstants.RP_NODE_NAME_HINT, "test"),
+                        new NameValuePair(MediaRangeList.PARAM_ACCEPT, "application/json,/;q=0.9")),
+                201, "POST");
         assertNotNull(content);
         urlsToDelete.add(postUrl); // remove created nodes after test
 
         // check the json content matches what would be sent from the SlingPostServlet
         try (Reader reader = new StringReader(content);
-        		JsonReader jsonReader = Json.createReader(reader)) {
+                JsonReader jsonReader = Json.createReader(reader)) {
             JsonObject jsonObj = jsonReader.readObject();
             assertEquals(201, jsonObj.getInt("status.code"));
             assertEquals(true, jsonObj.getBoolean("isCreate"));
             assertTrue(jsonObj.getString("path").startsWith(resPath));
         }
-    }    
+    }
 
 }
