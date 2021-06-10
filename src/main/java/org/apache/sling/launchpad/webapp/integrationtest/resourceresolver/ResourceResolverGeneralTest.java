@@ -344,7 +344,7 @@ public class ResourceResolverGeneralTest {
         final Session s = rr.adaptTo(Session.class);
 
         try {
-            assertEquals("Expect 3 session attributes", 3,
+            assertEquals("Expect 4 session attributes", 4,
                 s.getAttributeNames().length);
             assertEquals("AStringValue", s.getAttribute("testAttributeString"));
             assertEquals(999, s.getAttribute("testAttributeNumber"));
@@ -360,7 +360,9 @@ public class ResourceResolverGeneralTest {
             validNames.add(ResourceResolverFactory.USER);
             validNames.add("testAttributeString");
             validNames.add("testAttributeNumber");
+            validNames.add("oak.bound-principals"); // new in oak 1.40.0 from OAK-9415
             final Iterator<String> names = rr.getAttributeNames();
+            assertTrue(validNames.remove(names.next()));
             assertTrue(validNames.remove(names.next()));
             assertTrue(validNames.remove(names.next()));
             assertTrue(validNames.remove(names.next()));
