@@ -34,8 +34,8 @@ public class HtmlDefaultServletTest extends ResolutionTestBase {
         
         // enable the HtmlDefaultServlet before testing
         Map<String, String> properties = new HashMap<String, String>();
-        properties.put("apply", "true");
-        properties.put("GET", "sling.servlet.methods");
+        properties.put("apply", "update"); // NOTE: behavior changed by FELIX-6436
+        properties.put("sling.servlet.methods", "GET");
         properties.put("propertylist", "sling.servlet.methods");
         assertEquals(302, testClient.post(CONFIG_SERVLET, properties));
     }

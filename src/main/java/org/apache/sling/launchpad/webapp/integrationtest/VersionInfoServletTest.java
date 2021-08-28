@@ -91,7 +91,7 @@ public class VersionInfoServletTest extends HttpTestBase {
 
     private void createConfiguration(final String selector) throws IOException {
         Map<String, String> properties = new HashMap<String, String>();
-        properties.put("apply", "true");
+        properties.put("apply", "update"); // NOTE: behavior changed by FELIX-6436
         properties.put("sling.servlet.selectors", selector);
         properties.put("propertylist", "sling.servlet.selectors");
         assertEquals(302, testClient.post(CONFIG_SERVLET, properties));
