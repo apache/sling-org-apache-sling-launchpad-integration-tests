@@ -375,7 +375,7 @@
     <dependency>
       <groupId>org.apache.sling</groupId>
       <artifactId>org.apache.sling.launchpad.test-services</artifactId>
-      <version>${project.version}</version>
+      <version>12</version>
     </dependency>
     <dependency>
       <groupId>org.apache.sling</groupId>
