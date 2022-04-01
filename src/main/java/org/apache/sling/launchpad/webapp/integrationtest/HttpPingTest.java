@@ -28,7 +28,8 @@ public class HttpPingTest extends HttpTestBase {
     
     public void testWebServerRoot() throws Exception
     {
-        // by default, the Launchpad default servlet redirects / to index.html
+        // by default, the Launchpad default servlet redirects / to starter.html
+        // but we keep it general to be on the safe side
         final String url = HTTP_BASE_URL + "/";
         final GetMethod get = new GetMethod(url);
         get.setFollowRedirects(false);
@@ -36,7 +37,7 @@ public class HttpPingTest extends HttpTestBase {
         assertEquals("Status must be 302 for " + url, 302, status);
         final Header h = get.getResponseHeader("Location");
         assertNotNull("Location header must be provided",h);
-        assertTrue("Location header must end with index.html", h.getValue().endsWith("index.html"));
+        assertTrue("Location header must end with .html", h.getValue().endsWith(".html"));
     }
     
     public void test404() throws Exception
