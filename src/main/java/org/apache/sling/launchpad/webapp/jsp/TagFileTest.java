@@ -68,11 +68,6 @@ public class TagFileTest {
         
         assertTaglibInstalled();
 
-        if ( !H.isBundleVersionAtLeast("org.apache.sling.scripting.jsp", "2.3.1") ) {
-            System.out.println("Bundle version is too old, skipping");
-            return;
-        }
-        
         H.getTestClient().createNode(H.HTTP_BASE_URL + "/content/tagtest", Collections.singletonMap("sling:resourceType", "sling/test/tagfile"));
         H.getTestClient().mkdirs(H.HTTP_BASE_URL, "/apps/sling/test/tagfile");
         H.getTestClient().upload(H.HTTP_BASE_URL + "/apps/sling/test/tagfile/html.jsp", new ByteArrayInputStream(TAG_FILE_SCRIPT.getBytes(Charset.forName("UTF-8"))));
