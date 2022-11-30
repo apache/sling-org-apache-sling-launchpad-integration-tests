@@ -23,6 +23,7 @@
 <%@taglib prefix="sling" uri="http://sling.apache.org/taglibs/sling/1.0"%>
 <%
 String customMessage= "custom error page";
+response.setStatus(401);
 %>
 <html>
 	<head>

@@ -22,6 +22,5 @@
 %>
 
 <% 
-response.setStatus(500);
 response.sendError(500);
 %>

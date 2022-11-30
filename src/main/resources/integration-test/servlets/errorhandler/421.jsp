@@ -40,6 +40,8 @@ final SlingHttpServletRequest slingRequest = (SlingHttpServletRequest)request;
 final List selectors = Arrays.asList(slingRequest.getRequestPathInfo().getSelectors());
 if(selectors.contains("312")) {
     response.setStatus(312);
+} else {
+    response.setStatus(421);
 }
 if(selectors.contains("errorScriptException")) {
     throw new Exception("Exception in error handler");
