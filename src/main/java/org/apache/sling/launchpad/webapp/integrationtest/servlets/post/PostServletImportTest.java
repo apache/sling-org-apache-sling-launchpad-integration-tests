@@ -21,6 +21,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -84,7 +85,7 @@ public class PostServletImportTest extends HttpTestBase {
     }
 
     private File getTestFile(InputStream inputStream) throws IOException {
-    	File tempFile = File.createTempFile("file-to-upload", null, new File("target"));
+    	File tempFile = Files.createTempFile(new File("target").toPath(), "file-to-upload", null).toFile();
     	FileOutputStream outputStream = new FileOutputStream(tempFile);
     	byte[] bbuf = new byte[16384]; //16k
     	int len;
