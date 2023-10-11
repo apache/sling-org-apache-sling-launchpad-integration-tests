@@ -18,17 +18,15 @@
  */
 package org.apache.sling.launchpad.webapp.integrationtest;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
 import java.io.IOException;
 import java.util.UUID;
 
 import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.HttpMethod;
 import org.apache.sling.commons.testing.integration.HttpAnyMethod;
 import org.apache.sling.commons.testing.integration.HttpTest;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -79,6 +77,7 @@ public class WebDavDoubleSlashTest {
 
     @Test
     public void testEmptyWorkspace() throws HttpException, IOException {
-        assertPropfindStatus(207, "", testPath);
+        // Jetty 5.x rejects parsing the URI as ambiguous
+        assertPropfindStatus(400, "", testPath);
     }
 }
