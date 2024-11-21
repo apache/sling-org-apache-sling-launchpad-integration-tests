@@ -30,10 +30,10 @@ import org.apache.sling.commons.testing.integration.HttpTestBase;
  */
 public class JsonTest extends HttpTestBase {
 
-    public void testDomExecutionIsSuccessful() throws IOException {
+    public void testJsonRenderingIsSuccessful() throws IOException {
 
         String content = getContent(HTTP_BASE_URL + "/bin/jakarta.json", CONTENT_TYPE_JSON);
 
-        assertThat("JSON outtput", content, startsWith("{\"greeting"));
+        assertThat("JSON output", content, startsWith("{\"greeting"));
     }
 }
