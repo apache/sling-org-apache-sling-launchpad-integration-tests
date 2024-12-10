@@ -6,37 +6,6 @@
 
 This module is part of the [Apache Sling](https://sling.apache.org) project and
 contains test classes used by the 
-[launchpad/testing](https://github.com/apache/sling-org-apache-sling-launchpad-testing/) module.
+[Sling Starter](https://github.com/apache/sling-org-apache-sling-starter/) integration tests.
 
-To run a single test or a specific set of tests against a running Sling
-instance, use for example:
-
-    mvn test -Dtest=UploadFileTest -Dhttp.port=1234
-    
-Where UploadFileTest is the test to run. Wildcards are allowed, and test
-classes are found in the src/main folder (not a typo - that's not src/test
-as we want to pack the tests in the jar file that we build).
-
-See the `<properties>` section in pom.xml for additional parameters that the
-tests use.
-
-Here's another example, running the tests against a Sling instance running 
-on host xyzzy, port 1234, with the Sling main servlet mounted under /foo:
-
-    mvn -o -s /dev/null test \
-        -Dhttp.port=1234 \
-        -Dtest.host=xyzzy \
-        -Dhttp.base.path=foo \
-        -Dwebdav.workspace.path=foo \
-        -Dlaunchpad.readiness.mediatype=.json:application/json \ 
-        -Dtest=**/integrationtest/**/*Test.java
-
-To run or debug tests against the same instance that `launchpad/testing` module,
-see that module's README for how to start the test instance.
-
-The standard `-Dmaven.surefire.debug` option can be used to debug the tests
-themselves.
-
-Some tests might fail if not using a a Sling instance that's not setup by 
-the `launchpad/testing module`, as that installs a few additional test
-bundles.
+Please see the Sling Starter repository for instructions on running and debugging the tests.
