@@ -29,9 +29,9 @@ import java.util.Arrays;
 import java.util.regex.Pattern;
 
 import org.apache.commons.httpclient.NameValuePair;
+import org.apache.sling.api.request.header.MediaRangeList;
 import org.apache.sling.commons.testing.integration.HttpTestBase;
 import org.apache.sling.servlets.post.SlingPostConstants;
-import org.apache.sling.servlets.post.impl.helper.MediaRangeList;
 
 /** Test the various status options for POST, SLING-10006 */
 public class PostSendErrorTest extends HttpTestBase {
