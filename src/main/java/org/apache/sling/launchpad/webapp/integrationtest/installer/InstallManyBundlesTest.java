@@ -1,22 +1,26 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.launchpad.webapp.integrationtest.installer;
 
-import static org.junit.Assert.fail;
+import javax.json.JsonException;
+import javax.json.JsonObject;
+import javax.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,10 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import javax.json.JsonException;
-import javax.json.JsonObject;
-import javax.servlet.http.HttpServletResponse;
-
+import junit.framework.AssertionFailedError;
 import org.apache.sling.commons.testing.integration.HttpTest;
 import org.apache.sling.launchpad.webapp.integrationtest.util.JsonUtil;
 import org.apache.sling.testing.tools.sling.TimeoutsProvider;
@@ -39,7 +40,7 @@ import org.osgi.framework.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import junit.framework.AssertionFailedError;
+import static org.junit.Assert.fail;
 
 /** Test the installation and update of several (optionally many)
  *  bundles via the JCR installer
@@ -54,11 +55,11 @@ public class InstallManyBundlesTest {
 
     private static final String TEST_ID = UUID.randomUUID().toString();
 
-    private static final String BASE_BSN = "org.apache.sling.testbundle."
-        + InstallManyBundlesTest.class.getSimpleName()
-        + "." + TEST_ID;
+    private static final String BASE_BSN =
+            "org.apache.sling.testbundle." + InstallManyBundlesTest.class.getSimpleName() + "." + TEST_ID;
 
-    private static final String INSTALL_PATH = "/apps/" + InstallManyBundlesTest.class.getSimpleName() + "/" + TEST_ID + "/install";
+    private static final String INSTALL_PATH =
+            "/apps/" + InstallManyBundlesTest.class.getSimpleName() + "/" + TEST_ID + "/install";
 
     private static HttpTest H = new HttpTest();
 
@@ -85,7 +86,8 @@ public class InstallManyBundlesTest {
                 .build();
     }
 
-    private void assertActiveBundle(String bsn, String expectedState, String expectedVersion) throws IOException, JsonException {
+    private void assertActiveBundle(String bsn, String expectedState, String expectedVersion)
+            throws IOException, JsonException {
         final String consoleUrl = HttpTest.HTTP_BASE_URL + "/system/console/bundles/" + bsn + ".json";
 
         String state = null;
@@ -93,20 +95,20 @@ public class InstallManyBundlesTest {
 
         final long timeoutMsec = TimeoutsProvider.getInstance().getTimeout(WAIT_ACTIVE_TIMEOUT_MSEC);
         final long endTime = System.currentTimeMillis() + timeoutMsec;
-        while(System.currentTimeMillis() < endTime) {
+        while (System.currentTimeMillis() < endTime) {
             try {
                 final String jsonStr = H.getContent(consoleUrl, HttpTest.CONTENT_TYPE_JSON);
                 final JsonObject json = JsonUtil.parseObject(jsonStr);
                 state = json.getJsonArray("data").getJsonObject(0).getString("state");
                 version = json.getJsonArray("data").getJsonObject(0).getString("version");
-                if(expectedState.equalsIgnoreCase(state) && expectedVersion.equalsIgnoreCase(version)) {
+                if (expectedState.equalsIgnoreCase(state) && expectedVersion.equalsIgnoreCase(version)) {
                     return;
                 }
                 Thread.sleep(100);
-            } catch(AssertionFailedError dontCare) {
+            } catch (AssertionFailedError dontCare) {
                 // Thrown by getContent - might happen before the
                 // bundle is installed
-            } catch(InterruptedException ignore) {
+            } catch (InterruptedException ignore) {
             }
         }
 
@@ -121,23 +123,24 @@ public class InstallManyBundlesTest {
 
         final long timeoutMsec = TimeoutsProvider.getInstance().getTimeout(WAIT_ACTIVE_TIMEOUT_MSEC);
         final long endTime = System.currentTimeMillis() + timeoutMsec;
-        while(System.currentTimeMillis() < endTime) {
+        while (System.currentTimeMillis() < endTime) {
             try {
-                H.getContent(consoleUrl, HttpTest.CONTENT_TYPE_DONTCARE, null, HttpServletResponse.SC_NOT_FOUND );
+                H.getContent(consoleUrl, HttpTest.CONTENT_TYPE_DONTCARE, null, HttpServletResponse.SC_NOT_FOUND);
                 return true;
-            } catch(AssertionFailedError dontCare) {
+            } catch (AssertionFailedError dontCare) {
                 // Thrown by getContent - might happen if the bundle is still installed
             }
             try {
                 Thread.sleep(100);
-            } catch(InterruptedException ignore) {
+            } catch (InterruptedException ignore) {
             }
         }
 
         return false;
     }
 
-    private void installAndCheckBundle(String bsn, int filenameVariant, String version) throws IOException, JsonException {
+    private void installAndCheckBundle(String bsn, int filenameVariant, String version)
+            throws IOException, JsonException {
         final String filename = bsn + "." + filenameVariant + ".jar";
         final String url = HttpTest.HTTP_BASE_URL + INSTALL_PATH + "/" + filename;
         H.getTestClient().upload(url, getBundleStream(bsn, version));
@@ -149,7 +152,7 @@ public class InstallManyBundlesTest {
         final String bsn = BASE_BSN + "_upgradetest";
         int i = 0;
         try {
-            for(i=0; i < HOW_MANY; i++) {
+            for (i = 0; i < HOW_MANY; i++) {
                 final String version = "42.0." + i;
                 installAndCheckBundle(bsn, i, version);
             }
@@ -168,7 +171,7 @@ public class InstallManyBundlesTest {
         int i = 0;
         try {
             final String version = "42.42.42";
-            for(i=0; i < HOW_MANY; i++) {
+            for (i = 0; i < HOW_MANY; i++) {
                 final String bsn = BASE_BSN + "_manybundles_" + i;
                 bsns.add(bsn);
                 installAndCheckBundle(bsn, 0, version);
@@ -178,8 +181,8 @@ public class InstallManyBundlesTest {
             log.info("installManyBundles exiting with i={}", i);
             // we should wait until the OSGi installer has removed everything
             H.getTestClient().delete(toDelete);
-            while ( !bsns.isEmpty() ) {
-                if ( waitNoBundles(bsns.get(0)) ) {
+            while (!bsns.isEmpty()) {
+                if (waitNoBundles(bsns.get(0))) {
                     bsns.remove(0);
                 } else {
                     final String bsn = bsns.remove(0);

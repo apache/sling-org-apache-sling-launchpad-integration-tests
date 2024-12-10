@@ -1,26 +1,28 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.launchpad.webapp.integrationtest.servlets.post;
+
+import javax.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.servlet.http.HttpServletResponse;
 
 import org.apache.sling.commons.testing.integration.HttpTestBase;
 
@@ -54,9 +56,10 @@ public class PostServletAtMoveTest extends HttpTestBase {
         assertJavascript("Hello", content, "out.println(data.src.text)");
 
         // assert no content at old location
-        assertHttpStatus(HTTP_BASE_URL + testPath + "/src.json",
-            HttpServletResponse.SC_NOT_FOUND,
-        "Expected Not_Found for old content");
+        assertHttpStatus(
+                HTTP_BASE_URL + testPath + "/src.json",
+                HttpServletResponse.SC_NOT_FOUND,
+                "Expected Not_Found for old content");
     }
 
     public void testMoveNodeRelative() throws IOException {
@@ -79,9 +82,10 @@ public class PostServletAtMoveTest extends HttpTestBase {
         assertJavascript("Hello", content, "out.println(data.src.text)");
 
         // assert no content at old location
-        assertHttpStatus(HTTP_BASE_URL + testPath + "/src.json",
-            HttpServletResponse.SC_NOT_FOUND,
-        "Expected Not_Found for old content");
+        assertHttpStatus(
+                HTTP_BASE_URL + testPath + "/src.json",
+                HttpServletResponse.SC_NOT_FOUND,
+                "Expected Not_Found for old content");
     }
 
     public void testMovePropertyAbsolute() throws IOException {
@@ -104,11 +108,12 @@ public class PostServletAtMoveTest extends HttpTestBase {
         assertJavascript("Hello", content, "out.println(data.text)");
 
         // assert no content at old location
-        assertHttpStatus(HTTP_BASE_URL + testPath + "/src.json",
-            HttpServletResponse.SC_OK, "Expected source parent existing");
-        assertHttpStatus(HTTP_BASE_URL + testPath + "/src/text.json",
-            HttpServletResponse.SC_NOT_FOUND,
-            "Expected Not_Found for old content");
+        assertHttpStatus(
+                HTTP_BASE_URL + testPath + "/src.json", HttpServletResponse.SC_OK, "Expected source parent existing");
+        assertHttpStatus(
+                HTTP_BASE_URL + testPath + "/src/text.json",
+                HttpServletResponse.SC_NOT_FOUND,
+                "Expected Not_Found for old content");
     }
 
     public void testMovePropertyRelative() throws IOException {
@@ -131,11 +136,12 @@ public class PostServletAtMoveTest extends HttpTestBase {
         assertJavascript("Hello", content, "out.println(data.text)");
 
         // assert no content at old location
-        assertHttpStatus(HTTP_BASE_URL + testPath + "/src.json",
-            HttpServletResponse.SC_OK, "Expected source parent existing");
-        assertHttpStatus(HTTP_BASE_URL + testPath + "/src/text.json",
-            HttpServletResponse.SC_NOT_FOUND,
-            "Expected Not_Found for old content");
+        assertHttpStatus(
+                HTTP_BASE_URL + testPath + "/src.json", HttpServletResponse.SC_OK, "Expected source parent existing");
+        assertHttpStatus(
+                HTTP_BASE_URL + testPath + "/src/text.json",
+                HttpServletResponse.SC_NOT_FOUND,
+                "Expected Not_Found for old content");
     }
 
     public void testMoveNodeSourceMissing() throws IOException {
@@ -215,10 +221,10 @@ public class PostServletAtMoveTest extends HttpTestBase {
         // SLING-8186: if @Delete points to the name of a child
         // node of the parent after the move, that child node is deleted.
         // In this case it's the moved source node that's deleted
-        final String [] toDelete = { "NOTHING", "./dest" };
-        final int [] status = { 200, 404 };
+        final String[] toDelete = {"NOTHING", "./dest"};
+        final int[] status = {200, 404};
 
-        for(int i=0; i < toDelete.length; i++) {
+        for (int i = 0; i < toDelete.length; i++) {
             props.clear();
             props.put(toDelete[i] + "@Delete", "true");
             props.put(testPath + "/dest@MoveFrom", testPath + "/src");
@@ -226,5 +232,4 @@ public class PostServletAtMoveTest extends HttpTestBase {
             assertHttpStatus(HTTP_BASE_URL + testPath + "/dest.json", status[i], "for toDelete=" + toDelete[i]);
         }
     }
-
- }
+}

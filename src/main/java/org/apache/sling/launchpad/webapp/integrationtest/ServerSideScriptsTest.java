@@ -18,9 +18,6 @@
  */
 package org.apache.sling.launchpad.webapp.integrationtest;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.net.URI;
@@ -40,6 +37,9 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 /**
  * Execute all server-side test scripts found in a specified
@@ -76,22 +76,22 @@ public class ServerSideScriptsTest {
             this.testScriptFile = file;
             this.willFail = willFail;
         }
-        
+
         @Override
         public String toString() {
             return testScriptFile.getName();
         }
     }
-    
+
     private static class Collector {
         private final List<Definition> tests = new ArrayList<Definition>();
         private final Logger logger = LoggerFactory.getLogger(this.getClass());
-        
+
         Collector() {
             addScripts(TEST_SCRIPT_DIR_DEFAULT, false);
             addScripts(TEST_SCRIPT_DIR_FAIL_DEFAULT, true);
         }
-        
+
         /**
          * Get the directory for a resource path
          * @param resourcePath The resource path pointing to the script directory
@@ -100,19 +100,19 @@ public class ServerSideScriptsTest {
         private File getScriptDirectory(final String resourcePath) {
             final URL url = ServerSideScriptsTest.class.getClassLoader().getResource(resourcePath);
             if (url != null) {
-                if ( url.getProtocol().equals("file") ) {
+                if (url.getProtocol().equals("file")) {
                     URI uri = null;
                     try {
                         uri = url.toURI();
                         final File dir = new File(uri);
-                        if ( dir.exists() && dir.isDirectory() ) {
+                        if (dir.exists() && dir.isDirectory()) {
                             return dir;
                         }
                     } catch (final URISyntaxException e) {
-                        logger.info("Failed to get scripts from " + url , e);
+                        logger.info("Failed to get scripts from " + url, e);
                         // ignore
                     }
-                } else if ( url.getProtocol().equals("jar") ) {
+                } else if (url.getProtocol().equals("jar")) {
                     final String urlString = url.toString();
                     final int pos = urlString.indexOf('!');
                     try {
@@ -134,7 +134,7 @@ public class ServerSideScriptsTest {
                         expander.execute();
 
                         final File dir = new File(tempDir, resourcePath);
-                        if ( dir.exists() && dir.isDirectory() ) {
+                        if (dir.exists() && dir.isDirectory()) {
                             return dir;
                         }
                     } catch (final Exception e) {
@@ -148,21 +148,20 @@ public class ServerSideScriptsTest {
             }
             return null;
         }
-        
+
         /**
          * Collect all scripts of a directory specified by the resource path.
          *
          * @param resourcePath The resource path pointing to the script directory
          * @param willFail <code>false</code> if this test is expected to succeed, <code>true</code> otherwise
          */
-        private void addScripts(final String resourcePath,
-                                final boolean willFail) {
+        private void addScripts(final String resourcePath, final boolean willFail) {
             final File scriptDir = getScriptDirectory(resourcePath);
 
-            if ( scriptDir != null && scriptDir.list() != null && scriptDir.list().length > 0) {
-                for(final File f : scriptDir.listFiles()) {
-                    if ( !f.isHidden() ) {
-                        if ( f.isFile() ) {
+            if (scriptDir != null && scriptDir.list() != null && scriptDir.list().length > 0) {
+                for (final File f : scriptDir.listFiles()) {
+                    if (!f.isHidden()) {
+                        if (f.isFile()) {
                             logger.info("Found test script {}", f.getAbsolutePath());
 
                             final Definition test = new Definition(f, willFail);
@@ -175,20 +174,21 @@ public class ServerSideScriptsTest {
                 logger.info("No test scripts found with resource path {}", resourcePath);
             }
         }
-        
+
         List<Definition> getTests() {
             return tests;
         }
-    };
+    }
+    ;
 
     private final ServerSideTestClient slingClient;
     private final Definition test;
-    
-    @Parameters(name="{index} - {0}")
+
+    @Parameters(name = "{index} - {0}")
     public static Collection<Object[]> data() {
-        final List<Object []> result = new ArrayList<Object []>();
-        for(Definition t : new Collector().getTests()) {
-            result.add(new Object[] { t });
+        final List<Object[]> result = new ArrayList<Object[]>();
+        for (Definition t : new Collector().getTests()) {
+            result.add(new Object[] {t});
         }
         return result;
     }
@@ -216,37 +216,43 @@ public class ServerSideScriptsTest {
 
         try {
             // create test node
-            this.slingClient.createNode(scriptPath,
-                    "jcr:primaryType", "sling:Folder",
-                    "jcr:mixinTypes", "sling:Test",
-                    "sling:resourceType", RESOURCE_TYPE_PREFIX + '/' + test.testName);
+            this.slingClient.createNode(
+                    scriptPath,
+                    "jcr:primaryType",
+                    "sling:Folder",
+                    "jcr:mixinTypes",
+                    "sling:Test",
+                    "sling:resourceType",
+                    RESOURCE_TYPE_PREFIX + '/' + test.testName);
             toDelete = scriptPath;
 
             final String destPath = scriptPath + "/test.txt" + test.scriptExtension;
             logger.info("Setting up node {} for {}", destPath, test.testScriptFile.getAbsoluteFile());
             this.slingClient.upload(destPath, new FileInputStream(test.testScriptFile), -1, false);
-            
+
             // SLING-3087 with Oak, the Sling JUnit's scriptable module TestAllPaths class
             // might still see the old script, and not yet the new one, for some time.
             // There's probably a better way to avoid this...for now just wait a bit
             Thread.sleep(2000L);
 
             final long startTime = System.currentTimeMillis();
-            final ServerSideTestClient.TestResults results = slingClient.runTests("org.apache.sling.junit.scriptable.ScriptableTestsProvider");
+            final ServerSideTestClient.TestResults results =
+                    slingClient.runTests("org.apache.sling.junit.scriptable.ScriptableTestsProvider");
             assertEquals("Expecting 1 scriptable test", 1, results.getTestCount());
 
             final int failureCount = test.willFail ? 1 : 0;
-            if( results.getFailures().size() != failureCount) {
+            if (results.getFailures().size() != failureCount) {
                 fail("Expected "
-                        + failureCount + " failing tests but got " + results.getFailures().size()
+                        + failureCount + " failing tests but got "
+                        + results.getFailures().size()
                         + " for " + test.testScriptFile.getAbsolutePath()
                         + ": " + results.getFailures());
             }
-            
+
             logger.info("Execution of {} took {} msec", test, System.currentTimeMillis() - startTime);
 
         } finally {
-            if(toDelete != null) {
+            if (toDelete != null) {
                 this.slingClient.delete(toDelete);
             }
         }

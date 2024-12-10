@@ -1,24 +1,26 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.launchpad.webapp.integrationtest;
 
-import java.io.IOException;
-
 import javax.json.JsonObject;
+
+import java.io.IOException;
 
 import org.apache.sling.commons.testing.integration.NameValuePairList;
 import org.apache.sling.launchpad.webapp.integrationtest.util.JsonUtil;
@@ -32,8 +34,7 @@ import org.slf4j.LoggerFactory;
 public class PropertyRenderingTest extends RenderingTestBase {
 
     /** Logger instance */
-    private static final Logger log =
-            LoggerFactory.getLogger(PropertyRenderingTest.class);
+    private static final Logger log = LoggerFactory.getLogger(PropertyRenderingTest.class);
 
     private String slingResourceType;
 
@@ -52,7 +53,8 @@ public class PropertyRenderingTest extends RenderingTestBase {
         slingResourceType = getClass().getName();
 
         // create the test node, under a path that's specific to this class to allow collisions
-        final String url = HTTP_BASE_URL + "/ANON_CAN_READ/" + getClass().getSimpleName() + "/" + System.currentTimeMillis() + SlingPostConstants.DEFAULT_CREATE_SUFFIX;
+        final String url = HTTP_BASE_URL + "/ANON_CAN_READ/" + getClass().getSimpleName() + "/"
+                + System.currentTimeMillis() + SlingPostConstants.DEFAULT_CREATE_SUFFIX;
 
         NameValuePairList list = new NameValuePairList();
         list.add("sling:resourceType", slingResourceType);
@@ -93,7 +95,9 @@ public class PropertyRenderingTest extends RenderingTestBase {
     public void testMultiValuedTextJson() throws Exception {
         final String json = getContent(displayUrl + "/multiText.json", CONTENT_TYPE_JSON);
         final JsonObject obj = JsonUtil.parseObject(json);
-        assertEquals("[\"" + testMultiText1 + "\",\""+ testMultiText2 + "\"]", JsonUtil.toString(obj.getJsonArray("multiText")));
+        assertEquals(
+                "[\"" + testMultiText1 + "\",\"" + testMultiText2 + "\"]",
+                JsonUtil.toString(obj.getJsonArray("multiText")));
     }
 
     public void testMultiValuedTextHtml() throws IOException {

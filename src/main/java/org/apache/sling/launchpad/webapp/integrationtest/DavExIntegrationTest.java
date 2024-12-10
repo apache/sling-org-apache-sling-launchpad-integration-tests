@@ -1,34 +1,32 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements. See the NOTICE file distributed with this
- * work for additional information regarding copyright ownership. The ASF
- * licenses this file to You under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.launchpad.webapp.integrationtest;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-
 import javax.jcr.Credentials;
-import javax.jcr.GuestCredentials;
 import javax.jcr.Node;
 import javax.jcr.Repository;
 import javax.jcr.Session;
 import javax.jcr.SimpleCredentials;
 
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.methods.GetMethod;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.jackrabbit.commons.JcrUtils;
 import org.apache.sling.commons.testing.integration.HttpTestBase;
 
@@ -38,7 +36,7 @@ import org.apache.sling.commons.testing.integration.HttpTestBase;
 public class DavExIntegrationTest extends HttpTestBase {
 
     private Repository repository;
-    public static final String DAVEX_SERVER_URL = HTTP_BASE_URL + "/server/"; 
+    public static final String DAVEX_SERVER_URL = HTTP_BASE_URL + "/server/";
 
     @Override
     protected void setUp() throws Exception {
@@ -47,8 +45,7 @@ public class DavExIntegrationTest extends HttpTestBase {
         repository = JcrUtils.getRepository(DAVEX_SERVER_URL);
     }
 
-    protected void configureServerBeforeTest() throws Exception {
-    }
+    protected void configureServerBeforeTest() throws Exception {}
 
     public void testDescriptor() throws Exception {
         assertEquals("2.0", repository.getDescriptor(Repository.SPEC_VERSION_DESC));
@@ -91,6 +88,5 @@ public class DavExIntegrationTest extends HttpTestBase {
         super.tearDown();
     }
 
-    protected void configureServerAfterTest() throws Exception {
-    }
+    protected void configureServerAfterTest() throws Exception {}
 }

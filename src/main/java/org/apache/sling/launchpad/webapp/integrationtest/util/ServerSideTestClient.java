@@ -18,17 +18,13 @@
  */
 package org.apache.sling.launchpad.webapp.integrationtest.util;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.json.JsonArray;
-import javax.json.JsonObject;
 
 import org.apache.sling.junit.remote.httpclient.RemoteTestHttpClient;
 import org.apache.sling.testing.tools.http.RequestExecutor;
@@ -36,40 +32,44 @@ import org.apache.sling.testing.tools.jarexec.JarExecutor;
 import org.apache.sling.testing.tools.sling.SlingClient;
 import org.apache.sling.testing.tools.sling.SlingTestBase;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 /** Configurable SlingClient for server-side tests.
  *  We can't inherit from SlingTestBase as
  *  that class tries to start the JarExecutor which will fail in some
- *  situations (TODO: split that class into smaller utilities to avoid 
+ *  situations (TODO: split that class into smaller utilities to avoid
  *  this problem)
  */
 public class ServerSideTestClient extends SlingClient {
 
-    private final static String configuredUrl = System.getProperty(
-            SlingTestBase.TEST_SERVER_URL_PROP,
-            System.getProperty("launchpad.http.server.url"));
-    private final static String serverBaseUrl = getServerBaseUrl();
-    private final static String serverUsername = getUsername();
-    private final static String serverPassword = getPassword();
+    private static final String configuredUrl =
+            System.getProperty(SlingTestBase.TEST_SERVER_URL_PROP, System.getProperty("launchpad.http.server.url"));
+    private static final String serverBaseUrl = getServerBaseUrl();
+    private static final String serverUsername = getUsername();
+    private static final String serverPassword = getPassword();
 
     public static class TestResults {
         int testCount;
         List<String> failures = new ArrayList<String>();
-        
+
         public int getTestCount() {
             return testCount;
         }
-        
+
         public List<String> getFailures() {
             return failures;
         }
     }
-    
+
     public ServerSideTestClient() {
         super(getServerBaseUrl(), getUsername(), getPassword());
     }
-    
+
     public TestResults runTests(String testPackageOrClassName) throws Exception {
-        final RemoteTestHttpClient testClient = new RemoteTestHttpClient(serverBaseUrl + "/system/sling/junit",serverUsername,serverPassword,true);
+        final RemoteTestHttpClient testClient =
+                new RemoteTestHttpClient(serverBaseUrl + "/system/sling/junit", serverUsername, serverPassword, true);
         final TestResults r = new TestResults();
         final Map<String, String> options = new HashMap<String, String>();
         options.put("forceReload", "true");
@@ -78,12 +78,12 @@ public class ServerSideTestClient extends SlingClient {
         String content = executor.getContent();
         if (!content.trim().isEmpty()) {
             final JsonArray json = JsonUtil.parseArray(content);
-    
-            for(int i = 0 ; i < json.size(); i++) {
+
+            for (int i = 0; i < json.size(); i++) {
                 final JsonObject obj = json.getJsonObject(i);
-                if("test".equals(obj.getString("INFO_TYPE"))) {
+                if ("test".equals(obj.getString("INFO_TYPE"))) {
                     r.testCount++;
-                    if(obj.containsKey("failure")) {
+                    if (obj.containsKey("failure")) {
                         r.failures.add(JsonUtil.toString(obj.get("failure")));
                     }
                 }
@@ -92,7 +92,7 @@ public class ServerSideTestClient extends SlingClient {
 
         return r;
     }
-    
+
     /** Run server-side test(s)
      * @param testPackageOrClassName selects which tests to run
      * @param expectedTestsCount Use a negative -N value to mean "at least N tests"
@@ -100,22 +100,25 @@ public class ServerSideTestClient extends SlingClient {
      */
     public void assertTestsPass(String testPackageOrClassName, int expectedTestsCount) throws Exception {
         TestResults results = runTests(testPackageOrClassName);
-        if(expectedTestsCount < 0) {
-            assertTrue("Expecting at least " + -expectedTestsCount + " test(s) for " + testPackageOrClassName, 
+        if (expectedTestsCount < 0) {
+            assertTrue(
+                    "Expecting at least " + -expectedTestsCount + " test(s) for " + testPackageOrClassName,
                     results.getTestCount() >= -expectedTestsCount);
         } else {
-            assertEquals("Expecting " + expectedTestsCount + " test(s) for " + testPackageOrClassName, 
-                    expectedTestsCount, results.getTestCount());
+            assertEquals(
+                    "Expecting " + expectedTestsCount + " test(s) for " + testPackageOrClassName,
+                    expectedTestsCount,
+                    results.getTestCount());
         }
-        if(!results.getFailures().isEmpty()) {
+        if (!results.getFailures().isEmpty()) {
             fail(results.getFailures().size() + " tests failed:" + results.getFailures());
         }
     }
-    
+
     private static String getServerBaseUrl() {
         String serverBaseUrl = null;
         if (configuredUrl != null) {
-            if ( configuredUrl.endsWith("/") ) {
+            if (configuredUrl.endsWith("/")) {
                 serverBaseUrl = configuredUrl.substring(0, configuredUrl.length() - 1);
             } else {
                 serverBaseUrl = configuredUrl;
@@ -134,10 +137,8 @@ public class ServerSideTestClient extends SlingClient {
 
     private static String getPassword() {
         // Set configured password using "admin" as default credential
-        final String configuredPassword = System
-                .getProperty(SlingTestBase.TEST_SERVER_PASSWORD);
-        if (configuredPassword != null
-                && configuredPassword.trim().length() > 0) {
+        final String configuredPassword = System.getProperty(SlingTestBase.TEST_SERVER_PASSWORD);
+        if (configuredPassword != null && configuredPassword.trim().length() > 0) {
             return configuredPassword;
         } else {
             return SlingTestBase.ADMIN;
@@ -146,10 +147,8 @@ public class ServerSideTestClient extends SlingClient {
 
     private static String getUsername() {
         // Set configured username using "admin" as default credential
-        final String configuredUsername = System
-                .getProperty(SlingTestBase.TEST_SERVER_USERNAME);
-        if (configuredUsername != null
-                && configuredUsername.trim().length() > 0) {
+        final String configuredUsername = System.getProperty(SlingTestBase.TEST_SERVER_USERNAME);
+        if (configuredUsername != null && configuredUsername.trim().length() > 0) {
             return configuredUsername;
         } else {
             return SlingTestBase.ADMIN;

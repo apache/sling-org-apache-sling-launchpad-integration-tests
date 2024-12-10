@@ -1,27 +1,29 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.launchpad.webapp.integrationtest;
+
+import javax.json.JsonException;
+import javax.json.JsonObject;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.json.JsonException;
-import javax.json.JsonObject;
 
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.sling.commons.testing.integration.HttpTestBase;
@@ -40,10 +42,10 @@ public class RedirectTest extends HttpTestBase {
         // create the test node, under a path that's specific to this class to
         // allow collisions
         postUrl = HTTP_BASE_URL + "/" + getClass().getSimpleName() + "_"
-            + System.currentTimeMillis()
-            + SlingPostConstants.DEFAULT_CREATE_SUFFIX;
+                + System.currentTimeMillis()
+                + SlingPostConstants.DEFAULT_CREATE_SUFFIX;
     }
-    
+
     private void testRedirectToIndexHtml(String redirNodeUrl, int statusCode) throws IOException {
 
         // get the created node without following redirects
@@ -94,7 +96,7 @@ public class RedirectTest extends HttpTestBase {
         props.put("sling:resourceType", "sling:redirect");
         props.put("sling:target", "/index.html");
         String redirNodeUrl = testClient.createNode(postUrl, props);
-        
+
         testRedirectToIndexHtml(redirNodeUrl, 302);
     }
 
@@ -107,10 +109,10 @@ public class RedirectTest extends HttpTestBase {
         props.put("sling:target", "/index.html");
         props.put("sling:status", "301");
         String redirNodeUrl = testClient.createNode(postUrl, props);
-        
+
         testRedirectToIndexHtml(redirNodeUrl, 301);
     }
-    
+
     /** test 302 response with existing sling:target */
     public void testRedirect302_absolute() throws IOException {
 
@@ -231,5 +233,4 @@ public class RedirectTest extends HttpTestBase {
 
         assertEquals("sling:redirect", json.getString("sling:resourceType"));
     }
-
 }

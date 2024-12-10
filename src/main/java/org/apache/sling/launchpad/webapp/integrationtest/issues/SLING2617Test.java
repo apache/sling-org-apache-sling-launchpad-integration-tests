@@ -27,20 +27,16 @@ public class SLING2617Test extends HttpTestBase {
     private final String TEST_PATH = "/" + getClass().getSimpleName();
 
     public void testDateBeanProperties() throws Exception {
-        final String [] mustContain = {
-                "New time (123456)",
-                "All good!"
-        };
+        final String[] mustContain = {"New time (123456)", "All good!"};
 
         final TestNode tn = new TestNode(HTTP_BASE_URL + TEST_PATH, null);
 
         String toDelete = null;
         try {
             toDelete = uploadTestScript(tn.scriptPath, "issues/sling2617/bean-set-get.jsp", "html.jsp");
-            final String content = getContent(tn.nodeUrl + ".html", CONTENT_TYPE_HTML,
-                    null, HttpServletResponse.SC_OK);
+            final String content = getContent(tn.nodeUrl + ".html", CONTENT_TYPE_HTML, null, HttpServletResponse.SC_OK);
 
-            for(String str : mustContain) {
+            for (String str : mustContain) {
                 assertTrue("Content must contain " + str + " (" + content + ")", content.contains(str));
             }
 

@@ -24,10 +24,9 @@ import org.apache.sling.commons.testing.integration.HttpTestBase;
 
 /**
  * The <tt>DomTest</tt> verifies that simple DOM executions are successful
- * 
+ *
  */
 public class DomTest extends HttpTestBase {
-
 
     public void testDomExecutionIsSuccessful() throws IOException {
 
@@ -35,5 +34,4 @@ public class DomTest extends HttpTestBase {
 
         assertEquals(content, "DOM");
     }
-
 }

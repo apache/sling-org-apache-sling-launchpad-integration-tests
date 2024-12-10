@@ -18,10 +18,10 @@
  */
 package org.apache.sling.launchpad.webapp.integrationtest.util;
 
-import java.io.IOException;
-
 import javax.json.JsonException;
 import javax.json.JsonObject;
+
+import java.io.IOException;
 
 import org.apache.sling.commons.testing.integration.HttpTest;
 import org.apache.sling.commons.testing.integration.HttpTestBase;
@@ -31,11 +31,13 @@ import org.apache.sling.testing.tools.retry.RetryLoop.Condition;
 /** Give access to info provided by the test-services EventsCounterServlet */
 public class EventsCounterUtil {
     public static int getEventsCount(HttpTestBase b, String topic) throws JsonException, IOException {
-        final JsonObject json = JsonUtil.parseObject(b.getContent(HttpTest.HTTP_BASE_URL + "/testing/EventsCounter.json", HttpTest.CONTENT_TYPE_JSON));
+        final JsonObject json = JsonUtil.parseObject(
+                b.getContent(HttpTest.HTTP_BASE_URL + "/testing/EventsCounter.json", HttpTest.CONTENT_TYPE_JSON));
         return json.containsKey(topic) ? json.getInt(topic) : 0;
     }
 
-    public static void waitForEvent(final HttpTestBase b, final String topic, int timeoutSeconds, final int previousCount) {
+    public static void waitForEvent(
+            final HttpTestBase b, final String topic, int timeoutSeconds, final int previousCount) {
         final Condition c = new Condition() {
             public String getDescription() {
                 return "Wait for OSGi event on topic " + topic;

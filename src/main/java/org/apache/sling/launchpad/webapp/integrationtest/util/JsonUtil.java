@@ -1,27 +1,22 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.launchpad.webapp.integrationtest.util;
-
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.util.AbstractMap;
-import java.util.Map.Entry;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -35,12 +30,19 @@ import javax.json.JsonStructure;
 import javax.json.JsonValue;
 import javax.json.JsonValue.ValueType;
 
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.util.AbstractMap;
+import java.util.Map.Entry;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 public class JsonUtil {
     public static JsonStructure parse(String input) throws JsonException {
         return Json.createReader(new StringReader(input)).read();
     }
 
-    public static JsonObject parseObject(String input) throws JsonException{
+    public static JsonObject parseObject(String input) throws JsonException {
         return (JsonObject) parse(input);
     }
 
@@ -71,14 +73,15 @@ public class JsonUtil {
 
     @SuppressWarnings("unchecked")
     public static <T> T unbox(JsonValue value) {
-        return (T) unbox(value, json -> json.getValueType() == ValueType.ARRAY ? 
-                ((JsonArray) json).stream()
-                    .map(JsonUtil::unbox)
-                    .collect(Collectors.toList())
-                :
-                ((JsonObject) json).entrySet().stream()
-                    .map(entry -> new AbstractMap.SimpleEntry<>(entry.getKey(),unbox(entry.getValue())))
-                    .collect(Collectors.toMap(Entry::getKey, Entry::getValue)));
+        return (T) unbox(
+                value,
+                json -> json.getValueType() == ValueType.ARRAY
+                        ? ((JsonArray) json).stream().map(JsonUtil::unbox).collect(Collectors.toList())
+                        : ((JsonObject) json)
+                                .entrySet().stream()
+                                        .map(entry ->
+                                                new AbstractMap.SimpleEntry<>(entry.getKey(), unbox(entry.getValue())))
+                                        .collect(Collectors.toMap(Entry::getKey, Entry::getValue)));
     }
 
     public static String toString(JsonValue value) {
@@ -90,7 +93,7 @@ public class JsonUtil {
     public static String toString(JsonArrayBuilder builder) {
         return toString(builder.build());
     }
-    
+
     public static String toString(JsonObjectBuilder builder) {
         return toString(builder.build());
     }

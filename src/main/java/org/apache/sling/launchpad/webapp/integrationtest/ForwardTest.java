@@ -1,18 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.launchpad.webapp.integrationtest;
 
@@ -26,10 +28,8 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.sling.commons.testing.integration.HttpTestBase;
 import org.apache.sling.servlets.post.SlingPostConstants;
 
-
-
 /** Test the {link ScriptHelper#forward) functionality */
- public class ForwardTest extends HttpTestBase {
+public class ForwardTest extends HttpTestBase {
 
     private String nodeUrlA;
     private String testTextA;
@@ -48,8 +48,9 @@ import org.apache.sling.servlets.post.SlingPostConstants;
 
         // Create the test nodes under a path that's specific to this class to
         // allow collisions
-        final String url = HTTP_BASE_URL + "/" + getClass().getSimpleName() + "/" + System.currentTimeMillis() + SlingPostConstants.DEFAULT_CREATE_SUFFIX;
-        final Map<String,String> props = new HashMap<String,String>();
+        final String url = HTTP_BASE_URL + "/" + getClass().getSimpleName() + "/" + System.currentTimeMillis()
+                + SlingPostConstants.DEFAULT_CREATE_SUFFIX;
+        final Map<String, String> props = new HashMap<String, String>();
 
         // Create two test nodes and store their paths
         testTextA = "Text A " + System.currentTimeMillis();
@@ -70,7 +71,7 @@ import org.apache.sling.servlets.post.SlingPostConstants;
 
         // Node C is used for the infinite loop detection test
         props.remove("pathToInclude");
-        props.put("testInfiniteLoop","true");
+        props.put("testInfiniteLoop", "true");
         nodeUrlC = testClient.createNode(url, props);
 
         // Node D is used for the "force resource type" test
@@ -83,42 +84,42 @@ import org.apache.sling.servlets.post.SlingPostConstants;
         // Script for forced resource type
         scriptPath = "/apps/" + forcedResourceType;
         testClient.mkdirs(WEBDAV_BASE_URL, scriptPath);
-        toDelete.add(uploadTestScript(scriptPath,"forward-forced.esp","html.esp"));
+        toDelete.add(uploadTestScript(scriptPath, "forward-forced.esp", "html.esp"));
 
         // The main rendering script goes under /apps in the repository
         scriptPath = "/apps/nt/unstructured";
         testClient.mkdirs(WEBDAV_BASE_URL, scriptPath);
-        toDelete.add(uploadTestScript(scriptPath,"forward-test.esp","html.esp"));
+        toDelete.add(uploadTestScript(scriptPath, "forward-test.esp", "html.esp"));
     }
 
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
-        for(String script : toDelete) {
+        for (String script : toDelete) {
             testClient.delete(script);
         }
     }
 
     public void testWithoutForward() throws IOException {
         final String content = getContent(nodeUrlA + ".html", CONTENT_TYPE_HTML);
-        assertTrue("Content includes ESP marker",content.contains("ESP template"));
-        assertTrue("Content contains formatted test text",content.contains("<p class=\"main\">" + testTextA + "</p>"));
+        assertTrue("Content includes ESP marker", content.contains("ESP template"));
+        assertTrue("Content contains formatted test text", content.contains("<p class=\"main\">" + testTextA + "</p>"));
         IncludeTest.assertNoIncludeRequestAttributes(content);
     }
 
     public void testWithForward() throws IOException {
         final String content = getContent(nodeUrlB + ".html", CONTENT_TYPE_HTML);
-        assertTrue("Content includes ESP marker",content.contains("ESP template"));
-        assertTrue("Content contains formatted test text",content.contains("<p class=\"main\">" + testTextA + "</p>"));
-        assertTrue("Text of node A is not included (" + content + ")",!content.contains(testTextB));
+        assertTrue("Content includes ESP marker", content.contains("ESP template"));
+        assertTrue("Content contains formatted test text", content.contains("<p class=\"main\">" + testTextA + "</p>"));
+        assertTrue("Text of node A is not included (" + content + ")", !content.contains(testTextB));
         IncludeTest.assertNoIncludeRequestAttributes(content);
     }
 
     public void testWithForwardAndExtension() throws IOException {
         final String content = getContent(nodeUrlE + ".html", CONTENT_TYPE_HTML);
-        assertTrue("Content includes ESP marker",content.contains("ESP template"));
-        assertTrue("Content contains formatted test text",content.contains("<p class=\"main\">" + testTextA + "</p>"));
-        assertTrue("Text of node A is not included (" + content + ")",!content.contains(testTextB));
+        assertTrue("Content includes ESP marker", content.contains("ESP template"));
+        assertTrue("Content contains formatted test text", content.contains("<p class=\"main\">" + testTextA + "</p>"));
+        assertTrue("Text of node A is not included (" + content + ")", !content.contains(testTextB));
         IncludeTest.assertNoIncludeRequestAttributes(content);
     }
 
@@ -129,8 +130,8 @@ import org.apache.sling.servlets.post.SlingPostConstants;
         httpClient.executeMethod(get);
         final String content = get.getResponseBodyAsString();
         assertTrue(
-            "Response contains infinite loop error message",
-            content.contains("org.apache.sling.api.request.RecursionTooDeepException"));
+                "Response contains infinite loop error message",
+                content.contains("org.apache.sling.api.request.RecursionTooDeepException"));
 
         // TODO: SLING-515, status is 500 when running the tests as part of the maven build
         // but 200 if running tests against a separate instance started with mvn jetty:run
@@ -140,10 +141,12 @@ import org.apache.sling.servlets.post.SlingPostConstants;
 
     public void testForcedResourceType() throws IOException {
         final String content = getContent(nodeUrlD + ".html", CONTENT_TYPE_HTML);
-        assertTrue("Content includes ESP marker",content.contains("ESP template"));
-        assertTrue("Content contains formatted test text",content.contains("<p class=\"main\">" + testTextA + "</p>"));
-        assertTrue("Text of node A is included (" + content + ")",!content.contains(testTextB));
-        assertTrue("Resource type has been forced (" + content + ")",content.contains("Forced resource type:" + forcedResourceType));
+        assertTrue("Content includes ESP marker", content.contains("ESP template"));
+        assertTrue("Content contains formatted test text", content.contains("<p class=\"main\">" + testTextA + "</p>"));
+        assertTrue("Text of node A is included (" + content + ")", !content.contains(testTextB));
+        assertTrue(
+                "Resource type has been forced (" + content + ")",
+                content.contains("Forced resource type:" + forcedResourceType));
         IncludeTest.assertNoIncludeRequestAttributes(content);
     }
 }

@@ -24,10 +24,9 @@ import org.apache.sling.commons.testing.integration.HttpTestBase;
 
 /**
  * The <tt>MiscUnsafeTest</tt> verifies that the <tt>sun.misc.Unsafe</tt> class can be loaded
- * 
+ *
  */
 public class MiscUnsafeTest extends HttpTestBase {
-
 
     public void testSunMiscUnsafeIsLoaded() throws IOException {
 
@@ -35,5 +34,4 @@ public class MiscUnsafeTest extends HttpTestBase {
 
         assertTrue("Response did not start with sun.misc:\n" + content, content.startsWith("sun.misc"));
     }
-
 }

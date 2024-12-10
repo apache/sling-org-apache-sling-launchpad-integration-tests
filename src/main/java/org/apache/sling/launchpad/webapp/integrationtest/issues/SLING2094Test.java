@@ -20,24 +20,25 @@ package org.apache.sling.launchpad.webapp.integrationtest.issues;
 
 import java.util.HashMap;
 import java.util.Map;
+
 import org.apache.sling.launchpad.webapp.integrationtest.RenderingTestBase;
 
 /** Test the SLING-2094 JSP errorpage statement */
 public class SLING2094Test extends RenderingTestBase {
-    public final static String TEST_ROOT = "/apps/sling2094";
+    public static final String TEST_ROOT = "/apps/sling2094";
     private String testNodePath;
-    
+
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        
+
         scriptPath = TEST_ROOT;
-        
+
         testClient.mkdirs(HTTP_BASE_URL, TEST_ROOT);
-        for(String file : new String[] { "custom-error-page.jsp", "sling2094.jsp" }) {
+        for (String file : new String[] {"custom-error-page.jsp", "sling2094.jsp"}) {
             uploadTestScript("issues/sling2094/" + file, file);
         }
-        
+
         final Map<String, String> props = new HashMap<String, String>();
         props.put(SLING_RESOURCE_TYPE, TEST_ROOT);
         testNodePath = testClient.createNode(HTTP_BASE_URL + TEST_ROOT, props);
@@ -48,13 +49,13 @@ public class SLING2094Test extends RenderingTestBase {
         super.tearDown();
         testClient.delete(HTTP_BASE_URL + TEST_ROOT);
     }
-    
+
     public void testWithoutError() throws Exception {
         final String expected = "All good, no exception";
         final String url = testNodePath + ".html";
         assertContains(getContent(url, CONTENT_TYPE_HTML), expected);
     }
-    
+
     public void testWithError() throws Exception {
         final String expected = "witherror selector was specified";
         final String url = testNodePath + ".witherror.html";
