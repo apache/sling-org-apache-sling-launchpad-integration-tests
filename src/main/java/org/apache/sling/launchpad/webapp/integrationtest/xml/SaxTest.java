@@ -24,7 +24,7 @@ import org.apache.sling.commons.testing.integration.HttpTestBase;
 
 /**
  * The <tt>SaxTest</tt> verifies that a simple SAX operation is successful
- * 
+ *
  */
 public class SaxTest extends HttpTestBase {
 
@@ -34,5 +34,4 @@ public class SaxTest extends HttpTestBase {
 
         assertEquals(content, "SAX");
     }
-
 }

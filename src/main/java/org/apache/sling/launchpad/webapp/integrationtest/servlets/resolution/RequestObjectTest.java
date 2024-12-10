@@ -1,18 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.launchpad.webapp.integrationtest.servlets.resolution;
 
@@ -33,7 +35,7 @@ public class RequestObjectTest extends ResolutionTestBase {
         final String expectedURISuffix;
         final String expectedURLSuffix;
 
-        TestItem(String s,String uri,String url) {
+        TestItem(String s, String uri, String url) {
             requestSuffix = s;
             expectedURISuffix = uri;
             expectedURLSuffix = url;
@@ -42,13 +44,14 @@ public class RequestObjectTest extends ResolutionTestBase {
         public String info(String msg) {
             return msg + ":TestItem with suffix [" + requestSuffix + "]";
         }
-    };
+    }
+    ;
 
-    final TestItem [] TESTS = {
-            new TestItem("","",""),
-            new TestItem(";v=1.1",";v=1.1",";v=1.1"),
-            new TestItem(";v=1.1?foo=bar",";v=1.1",";v=1.1"),
-            new TestItem(";v=1.1?foo=bar&ga+bu=zo+meu",";v=1.1",";v=1.1")
+    final TestItem[] TESTS = {
+        new TestItem("", "", ""),
+        new TestItem(";v=1.1", ";v=1.1", ";v=1.1"),
+        new TestItem(";v=1.1?foo=bar", ";v=1.1", ";v=1.1"),
+        new TestItem(";v=1.1?foo=bar&ga+bu=zo+meu", ";v=1.1", ";v=1.1")
     };
 
     @Override
@@ -58,12 +61,16 @@ public class RequestObjectTest extends ResolutionTestBase {
     }
 
     public void testRequestPathInfo() throws IOException {
-        for(TestItem t : TESTS) {
-            final String content = getContent(testNodeNORT.nodeUrl + ".TEST_SEL_1.txt" + t.requestSuffix, CONTENT_TYPE_PLAIN);
+        for (TestItem t : TESTS) {
+            final String content =
+                    getContent(testNodeNORT.nodeUrl + ".TEST_SEL_1.txt" + t.requestSuffix, CONTENT_TYPE_PLAIN);
             final Properties props = getTestServletProperties(content);
             assertEquals(t.info("path"), path, props.get("http.request.pathInfo"));
             assertEquals(t.info("URI"), path + t.expectedURISuffix, props.get("http.request.requestURI"));
-            assertEquals(t.info("URL"), testNodeNORT.nodeUrl + extension + t.expectedURLSuffix, props.get("http.request.requestURL"));
+            assertEquals(
+                    t.info("URL"),
+                    testNodeNORT.nodeUrl + extension + t.expectedURLSuffix,
+                    props.get("http.request.requestURL"));
         }
     }
 }

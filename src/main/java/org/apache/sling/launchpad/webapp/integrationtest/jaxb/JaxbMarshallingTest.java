@@ -24,10 +24,9 @@ import org.apache.sling.commons.testing.integration.HttpTestBase;
 
 /**
  * The <tt>JaxbMarshallingTest</tt> verifies that a simple JAXB entity can be marshalled by a Sling servlet
- * 
+ *
  */
 public class JaxbMarshallingTest extends HttpTestBase {
-
 
     public void testJaxbEntityIsMarshalled() throws IOException {
 
@@ -35,5 +34,4 @@ public class JaxbMarshallingTest extends HttpTestBase {
 
         assertTrue("Response did not start with an XML declaration:\n" + content, content.startsWith("<?xml"));
     }
-
 }

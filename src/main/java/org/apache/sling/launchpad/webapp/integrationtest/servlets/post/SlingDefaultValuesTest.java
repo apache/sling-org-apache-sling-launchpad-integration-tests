@@ -1,18 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.launchpad.webapp.integrationtest.servlets.post;
 
@@ -27,7 +29,6 @@ import org.apache.sling.servlets.post.SlingPostConstants;
 /** {#link SlingPropertyValueSetter} sets the value of some properties
  *  with default values if they are empty. This is tested here with various cases.
  */
-
 public class SlingDefaultValuesTest extends HttpTestBase {
 
     public static final String TEST_BASE_PATH = "/sling-tests";
@@ -41,7 +42,7 @@ public class SlingDefaultValuesTest extends HttpTestBase {
 
     public void testDefaultBehaviour() throws IOException {
         final Map<String, String> props = new HashMap<String, String>();
-        props.put("a","");
+        props.put("a", "");
 
         final String createdNodeUrl = testClient.createNode(postUrl + SlingPostConstants.DEFAULT_CREATE_SUFFIX, props);
         String content = getContent(createdNodeUrl + ".json", CONTENT_TYPE_JSON);
@@ -104,9 +105,9 @@ public class SlingDefaultValuesTest extends HttpTestBase {
     }
 
     public void testWithSpecificDefault() throws IOException {
-        final Map <String, String> props = new HashMap <String, String> ();
-        props.put("a","");
-        props.put("a@DefaultValue","123");
+        final Map<String, String> props = new HashMap<String, String>();
+        props.put("a", "");
+        props.put("a@DefaultValue", "123");
 
         final String createdNodeUrl = testClient.createNode(postUrl + SlingPostConstants.DEFAULT_CREATE_SUFFIX, props);
         final String content = getContent(createdNodeUrl + ".json", CONTENT_TYPE_JSON);
@@ -115,9 +116,9 @@ public class SlingDefaultValuesTest extends HttpTestBase {
     }
 
     public void testWithSpecificDefaultAndNoValueField() throws IOException {
-        final Map <String, String> props = new HashMap <String, String> ();
-        props.put("a@DefaultValue","123");
-        props.put("a@UseDefaultWhenMissing","yes");
+        final Map<String, String> props = new HashMap<String, String>();
+        props.put("a@DefaultValue", "123");
+        props.put("a@UseDefaultWhenMissing", "yes");
 
         final String createdNodeUrl = testClient.createNode(postUrl + SlingPostConstants.DEFAULT_CREATE_SUFFIX, props);
         final String content = getContent(createdNodeUrl + ".json", CONTENT_TYPE_JSON);
@@ -126,9 +127,9 @@ public class SlingDefaultValuesTest extends HttpTestBase {
     }
 
     public void testWithIgnore() throws IOException {
-        final Map <String, String> props = new HashMap <String, String> ();
-        props.put("a","");
-        props.put("a@DefaultValue",":ignore");
+        final Map<String, String> props = new HashMap<String, String>();
+        props.put("a", "");
+        props.put("a@DefaultValue", ":ignore");
 
         final String createdNodeUrl = testClient.createNode(postUrl + SlingPostConstants.DEFAULT_CREATE_SUFFIX, props);
         final String content = getContent(createdNodeUrl + ".json", CONTENT_TYPE_JSON);
@@ -137,8 +138,8 @@ public class SlingDefaultValuesTest extends HttpTestBase {
     }
 
     public void testWithNull() throws IOException {
-        final Map <String, String> props = new HashMap <String, String> ();
-        props.put("a","123");
+        final Map<String, String> props = new HashMap<String, String>();
+        props.put("a", "123");
 
         final String createdNodeUrl = testClient.createNode(postUrl + SlingPostConstants.DEFAULT_CREATE_SUFFIX, props);
         String content = getContent(createdNodeUrl + ".json", CONTENT_TYPE_JSON);
@@ -146,8 +147,8 @@ public class SlingDefaultValuesTest extends HttpTestBase {
         assertJavascript("123", content, "out.println(data.a)");
 
         // now try to delete prop by sending empty string
-        props.put("a","");
-        props.put("a@DefaultValue",":null");
+        props.put("a", "");
+        props.put("a@DefaultValue", ":null");
         testClient.createNode(createdNodeUrl, props);
         content = getContent(createdNodeUrl + ".json", CONTENT_TYPE_JSON);
 

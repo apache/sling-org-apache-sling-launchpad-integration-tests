@@ -1,20 +1,27 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.launchpad.webapp.integrationtest.servlets.post;
+
+import javax.json.JsonArray;
+import javax.json.JsonException;
+import javax.json.JsonObject;
+import javax.servlet.http.HttpServletResponse;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -30,11 +37,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
-
-import javax.json.JsonArray;
-import javax.json.JsonException;
-import javax.json.JsonObject;
-import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.NameValuePair;
@@ -52,78 +54,79 @@ public class PostServletImportTest extends HttpTestBase {
     File testFile;
 
     /* (non-Javadoc)
-	 * @see org.apache.sling.commons.testing.integration.HttpTestBase#tearDown()
-	 */
-	@Override
-	protected void tearDown() throws Exception {
-		if (testFile != null) {
-			//cleanup temp file
-			testFile.delete();
-		}
-		super.tearDown();
-	}
+     * @see org.apache.sling.commons.testing.integration.HttpTestBase#tearDown()
+     */
+    @Override
+    protected void tearDown() throws Exception {
+        if (testFile != null) {
+            // cleanup temp file
+            testFile.delete();
+        }
+        super.tearDown();
+    }
 
-	static String getStreamAsString(InputStream is) throws IOException {
+    static String getStreamAsString(InputStream is) throws IOException {
         final StringBuilder content = new StringBuilder();
-        final byte [] buffer = new byte[16384];
+        final byte[] buffer = new byte[16384];
         int n = 0;
-        while( (n = is.read(buffer, 0, buffer.length)) > 0) {
+        while ((n = is.read(buffer, 0, buffer.length)) > 0) {
             content.append(new String(buffer, 0, n));
         }
         return content.toString();
     }
 
-	static String getStreamAsString(InputStream is, String charset) throws IOException {
-		InputStreamReader reader = new InputStreamReader(is, charset);
+    static String getStreamAsString(InputStream is, String charset) throws IOException {
+        InputStreamReader reader = new InputStreamReader(is, charset);
         final StringBuilder content = new StringBuilder();
-        final char [] buffer = new char[16384];
+        final char[] buffer = new char[16384];
         int n = 0;
-        while( (n = reader.read(buffer)) > 0) {
+        while ((n = reader.read(buffer)) > 0) {
             content.append(buffer, 0, n);
         }
         return content.toString();
     }
 
     private File getTestFile(InputStream inputStream) throws IOException {
-    	File tempFile = Files.createTempFile(new File("target").toPath(), "file-to-upload", null).toFile();
-    	FileOutputStream outputStream = new FileOutputStream(tempFile);
-    	byte[] bbuf = new byte[16384]; //16k
-    	int len;
-    	while ((len = inputStream.read(bbuf)) != -1) {
-    		outputStream.write(bbuf, 0, len);
-    	}
-    	outputStream.flush();
-    	outputStream.close();
-    	return tempFile;
+        File tempFile = Files.createTempFile(new File("target").toPath(), "file-to-upload", null)
+                .toFile();
+        FileOutputStream outputStream = new FileOutputStream(tempFile);
+        byte[] bbuf = new byte[16384]; // 16k
+        int len;
+        while ((len = inputStream.read(bbuf)) != -1) {
+            outputStream.write(bbuf, 0, len);
+        }
+        outputStream.flush();
+        outputStream.close();
+        return tempFile;
     }
 
     protected void assertExpectedJSON(JsonObject expectedJson, JsonObject actualJson) throws JsonException {
-    	Iterator<String> keys = expectedJson.keySet().iterator();
-    	while (keys.hasNext()) {
-    		String key = keys.next();
+        Iterator<String> keys = expectedJson.keySet().iterator();
+        while (keys.hasNext()) {
+            String key = keys.next();
 
-    		Object object = expectedJson.get(key);
-    		Object object2 = actualJson.get(key);
-			if (object instanceof JsonObject) {
-				assertTrue(object2 instanceof JsonObject);
-    			assertExpectedJSON((JsonObject)object, (JsonObject)object2);
-			} else if (object instanceof JsonArray) {
-				//compare the array
-				assertTrue(object2 instanceof JsonArray);
-				JsonArray actualArray = (JsonArray)object2;
-				Set<Object> actualValuesSet = new HashSet<Object>();
-				for (int i=0; i < actualArray.size(); i++) {
-					actualValuesSet.add(actualArray.get(i));
-				}
+            Object object = expectedJson.get(key);
+            Object object2 = actualJson.get(key);
+            if (object instanceof JsonObject) {
+                assertTrue(object2 instanceof JsonObject);
+                assertExpectedJSON((JsonObject) object, (JsonObject) object2);
+            } else if (object instanceof JsonArray) {
+                // compare the array
+                assertTrue(object2 instanceof JsonArray);
+                JsonArray actualArray = (JsonArray) object2;
+                Set<Object> actualValuesSet = new HashSet<Object>();
+                for (int i = 0; i < actualArray.size(); i++) {
+                    actualValuesSet.add(actualArray.get(i));
+                }
 
-				JsonArray expectedArray = (JsonArray)object;
-				for (int i=0; i < expectedArray.size(); i++) {
-					assertTrue(actualValuesSet.contains(expectedArray.get(i)));
-				}
-    		} else {
-    			assertEquals("Value of key: " + key, object, object2);
-    		}
-    	}
+                JsonArray expectedArray = (JsonArray) object;
+                for (int i = 0; i < expectedArray.size(); i++) {
+                    assertTrue(actualValuesSet.contains(expectedArray.get(i)));
+                }
+            } else {
+                assertEquals("Value of key: " + key, object, object2);
+            }
+        }
     }
 
     /**
@@ -135,35 +138,41 @@ public class PostServletImportTest extends HttpTestBase {
         String testNode = testClient.createNode(HTTP_BASE_URL + testPath, props);
         urlsToDelete.add(testNode);
 
-        //add node that will get replaced
+        // add node that will get replaced
         props.put("propTest", "propTestValue");
         String importedNodeUrl = testClient.createNode(HTTP_BASE_URL + testPath + "/nodeName", props);
 
-        //import with the replace option to replace the existing node.
+        // import with the replace option to replace the existing node.
         props.clear();
-        props.put(SlingPostConstants.RP_OPERATION,
-        		SlingPostConstants.OPERATION_IMPORT);
+        props.put(SlingPostConstants.RP_OPERATION, SlingPostConstants.OPERATION_IMPORT);
 
         testFile = getTestFile(getClass().getResourceAsStream("/integration-test/servlets/post/testimport2.json"));
         props.put(SlingPostConstants.RP_CONTENT_TYPE, "json");
         props.put(SlingPostConstants.RP_REDIRECT_TO, SERVLET_CONTEXT + testPath + "/*");
         props.put(SlingPostConstants.RP_REPLACE, "true");
-        String importedNodeUrl2 = testClient.createNode(HTTP_BASE_URL + testPath, new NameValuePairList(props), null, true,
-        		testFile, SlingPostConstants.RP_CONTENT_FILE, null);
+        String importedNodeUrl2 = testClient.createNode(
+                HTTP_BASE_URL + testPath,
+                new NameValuePairList(props),
+                null,
+                true,
+                testFile,
+                SlingPostConstants.RP_CONTENT_FILE,
+                null);
 
-        //the new node should have the same path as the replaced node
+        // the new node should have the same path as the replaced node
         assertEquals(importedNodeUrl, importedNodeUrl2);
 
         // assert content at new location
         String content = getContent(importedNodeUrl2 + ".3.json", CONTENT_TYPE_JSON);
 
-		JsonObject jsonObj = JsonUtil.parseObject(content);
-		assertNotNull(jsonObj);
-		assertNull(jsonObj.get("propTest")); //test property should be gone.
+        JsonObject jsonObj = JsonUtil.parseObject(content);
+        assertNotNull(jsonObj);
+        assertNull(jsonObj.get("propTest")); // test property should be gone.
 
-		//assert the imported content is there.
-        String expectedJsonContent = getStreamAsString(getClass().getResourceAsStream("/integration-test/servlets/post/importresults.json"));
-		assertExpectedJSON(JsonUtil.parseObject(expectedJsonContent), jsonObj);
+        // assert the imported content is there.
+        String expectedJsonContent =
+                getStreamAsString(getClass().getResourceAsStream("/integration-test/servlets/post/importresults.json"));
+        assertExpectedJSON(JsonUtil.parseObject(expectedJsonContent), jsonObj);
     }
 
     /**
@@ -176,14 +185,14 @@ public class PostServletImportTest extends HttpTestBase {
         String testNode = testClient.createNode(HTTP_BASE_URL + testPath, props);
         urlsToDelete.add(testNode);
 
-        //1. First import some initial content
+        // 1. First import some initial content
         props.clear();
-        props.put(SlingPostConstants.RP_OPERATION,
-        		SlingPostConstants.OPERATION_IMPORT);
+        props.put(SlingPostConstants.RP_OPERATION, SlingPostConstants.OPERATION_IMPORT);
 
         String testNodeName = "testNode_" + String.valueOf(random.nextInt());
         props.put(SlingPostConstants.RP_NODE_NAME_HINT, testNodeName);
-        String jsonContent = getStreamAsString(getClass().getResourceAsStream("/integration-test/servlets/post/testimport.json"));
+        String jsonContent =
+                getStreamAsString(getClass().getResourceAsStream("/integration-test/servlets/post/testimport.json"));
         props.put(SlingPostConstants.RP_CONTENT, jsonContent);
         props.put(SlingPostConstants.RP_CONTENT_TYPE, "json");
         props.put(SlingPostConstants.RP_REDIRECT_TO, SERVLET_CONTEXT + testPath + "/*");
@@ -192,21 +201,21 @@ public class PostServletImportTest extends HttpTestBase {
         // assert content at new location
         String content = getContent(importedNodeUrl + ".3.json", CONTENT_TYPE_JSON);
 
-		JsonObject jsonObj = JsonUtil.parseObject(content);
-		assertNotNull(jsonObj);
+        JsonObject jsonObj = JsonUtil.parseObject(content);
+        assertNotNull(jsonObj);
 
-		//assert the imported content is there.
-        String expectedJsonContent = getStreamAsString(getClass().getResourceAsStream("/integration-test/servlets/post/importresults.json"));
-		assertExpectedJSON(JsonUtil.parseObject(expectedJsonContent), jsonObj);
+        // assert the imported content is there.
+        String expectedJsonContent =
+                getStreamAsString(getClass().getResourceAsStream("/integration-test/servlets/post/importresults.json"));
+        assertExpectedJSON(JsonUtil.parseObject(expectedJsonContent), jsonObj);
 
-
-		//2. Second, import on top of the node from #1 to replace some properties.
+        // 2. Second, import on top of the node from #1 to replace some properties.
 
         props.clear();
-        props.put(SlingPostConstants.RP_OPERATION,
-        		SlingPostConstants.OPERATION_IMPORT);
+        props.put(SlingPostConstants.RP_OPERATION, SlingPostConstants.OPERATION_IMPORT);
 
-        String jsonContent2 = getStreamAsString(getClass().getResourceAsStream("/integration-test/servlets/post/testimport_replaceProps.json"));
+        String jsonContent2 = getStreamAsString(
+                getClass().getResourceAsStream("/integration-test/servlets/post/testimport_replaceProps.json"));
 
         props.put(SlingPostConstants.RP_CONTENT, jsonContent2);
         props.put(SlingPostConstants.RP_CONTENT_TYPE, "json");
@@ -217,12 +226,13 @@ public class PostServletImportTest extends HttpTestBase {
         // assert content at new location
         String content2 = getContent(importedNodeUrl + ".3.json", CONTENT_TYPE_JSON);
 
-		JsonObject jsonObj2 = JsonUtil.parseObject(content2);
-		assertNotNull(jsonObj2);
+        JsonObject jsonObj2 = JsonUtil.parseObject(content2);
+        assertNotNull(jsonObj2);
 
-		//assert the imported content is there.
-        String expectedJsonContent2 = getStreamAsString(getClass().getResourceAsStream("/integration-test/servlets/post/testimport_replaceProps.json"));
-		assertExpectedJSON(JsonUtil.parseObject(expectedJsonContent2), jsonObj2);
+        // assert the imported content is there.
+        String expectedJsonContent2 = getStreamAsString(
+                getClass().getResourceAsStream("/integration-test/servlets/post/testimport_replaceProps.json"));
+        assertExpectedJSON(JsonUtil.parseObject(expectedJsonContent2), jsonObj2);
     }
 
     /**
@@ -235,8 +245,7 @@ public class PostServletImportTest extends HttpTestBase {
         urlsToDelete.add(testNode);
 
         props.clear();
-        props.put(SlingPostConstants.RP_OPERATION,
-        		SlingPostConstants.OPERATION_IMPORT);
+        props.put(SlingPostConstants.RP_OPERATION, SlingPostConstants.OPERATION_IMPORT);
 
         String testNodeName = "testNode_" + String.valueOf(random.nextInt());
         props.put(SlingPostConstants.RP_NODE_NAME_HINT, testNodeName);
@@ -244,24 +253,28 @@ public class PostServletImportTest extends HttpTestBase {
         props.put(SlingPostConstants.RP_CONTENT_TYPE, "json");
         props.put(SlingPostConstants.RP_REDIRECT_TO, SERVLET_CONTEXT + testPath + "/*");
         props.put(SlingPostConstants.RP_CHECKIN, "true");
-        String importedNodeUrl = testClient.createNode(HTTP_BASE_URL + testPath, new NameValuePairList(props), null, true,
-        		testFile, SlingPostConstants.RP_CONTENT_FILE, null);
+        String importedNodeUrl = testClient.createNode(
+                HTTP_BASE_URL + testPath,
+                new NameValuePairList(props),
+                null,
+                true,
+                testFile,
+                SlingPostConstants.RP_CONTENT_FILE,
+                null);
 
         // assert content at new location
         String content = getContent(importedNodeUrl + ".json", CONTENT_TYPE_JSON);
 
-		JsonObject jsonObj = JsonUtil.parseObject(content);
-		assertNotNull(jsonObj);
+        JsonObject jsonObj = JsonUtil.parseObject(content);
+        assertNotNull(jsonObj);
 
-		//assert that the versionable node is checked in.
-		assertFalse(jsonObj.getBoolean("jcr:isCheckedOut"));
+        // assert that the versionable node is checked in.
+        assertFalse(jsonObj.getBoolean("jcr:isCheckedOut"));
 
-
-		//now try with the checkin value set to false
-		testFile.delete();
+        // now try with the checkin value set to false
+        testFile.delete();
         props.clear();
-        props.put(SlingPostConstants.RP_OPERATION,
-        		SlingPostConstants.OPERATION_IMPORT);
+        props.put(SlingPostConstants.RP_OPERATION, SlingPostConstants.OPERATION_IMPORT);
 
         String testNodeName2 = "testNode_" + String.valueOf(random.nextInt());
         props.put(SlingPostConstants.RP_NODE_NAME_HINT, testNodeName2);
@@ -269,17 +282,23 @@ public class PostServletImportTest extends HttpTestBase {
         props.put(SlingPostConstants.RP_CONTENT_TYPE, "json");
         props.put(SlingPostConstants.RP_REDIRECT_TO, SERVLET_CONTEXT + testPath + "/*");
         props.put(SlingPostConstants.RP_CHECKIN, "false");
-        String importedNodeUrl2 = testClient.createNode(HTTP_BASE_URL + testPath, new NameValuePairList(props), null, true,
-        		testFile, SlingPostConstants.RP_CONTENT_FILE, null);
+        String importedNodeUrl2 = testClient.createNode(
+                HTTP_BASE_URL + testPath,
+                new NameValuePairList(props),
+                null,
+                true,
+                testFile,
+                SlingPostConstants.RP_CONTENT_FILE,
+                null);
 
         // assert content at new location
         String content2 = getContent(importedNodeUrl2 + ".json", CONTENT_TYPE_JSON);
 
-		JsonObject jsonObj2 = JsonUtil.parseObject(content2);
-		assertNotNull(jsonObj2);
+        JsonObject jsonObj2 = JsonUtil.parseObject(content2);
+        assertNotNull(jsonObj2);
 
-		//assert that the versionable node is checked in.
-		assertTrue(jsonObj2.getBoolean("jcr:isCheckedOut"));
+        // assert that the versionable node is checked in.
+        assertTrue(jsonObj2.getBoolean("jcr:isCheckedOut"));
     }
 
     /**
@@ -291,10 +310,9 @@ public class PostServletImportTest extends HttpTestBase {
         String testNode = testClient.createNode(HTTP_BASE_URL + testPath, props);
         urlsToDelete.add(testNode);
 
-        //1. first create some content to update.
+        // 1. first create some content to update.
         props.clear();
-        props.put(SlingPostConstants.RP_OPERATION,
-        		SlingPostConstants.OPERATION_IMPORT);
+        props.put(SlingPostConstants.RP_OPERATION, SlingPostConstants.OPERATION_IMPORT);
 
         String testNodeName = "testNode_" + String.valueOf(random.nextInt());
         props.put(SlingPostConstants.RP_NODE_NAME_HINT, testNodeName);
@@ -302,61 +320,66 @@ public class PostServletImportTest extends HttpTestBase {
         props.put(SlingPostConstants.RP_CONTENT_TYPE, "json");
         props.put(SlingPostConstants.RP_REDIRECT_TO, SERVLET_CONTEXT + testPath + "/*");
         props.put(SlingPostConstants.RP_CHECKIN, "true");
-        String importedNodeUrl = testClient.createNode(HTTP_BASE_URL + testPath, new NameValuePairList(props), null, true,
-        		testFile, SlingPostConstants.RP_CONTENT_FILE, null);
+        String importedNodeUrl = testClient.createNode(
+                HTTP_BASE_URL + testPath,
+                new NameValuePairList(props),
+                null,
+                true,
+                testFile,
+                SlingPostConstants.RP_CONTENT_FILE,
+                null);
 
         // assert content at new location
         String content = getContent(importedNodeUrl + ".json", CONTENT_TYPE_JSON);
 
-		JsonObject jsonObj = JsonUtil.parseObject(content);
-		assertNotNull(jsonObj);
+        JsonObject jsonObj = JsonUtil.parseObject(content);
+        assertNotNull(jsonObj);
 
-		//assert that the versionable node is checked in.
-		assertFalse(jsonObj.getBoolean("jcr:isCheckedOut"));
+        // assert that the versionable node is checked in.
+        assertFalse(jsonObj.getBoolean("jcr:isCheckedOut"));
 
-
-		//2. try an update with the :autoCheckout value set to false
+        // 2. try an update with the :autoCheckout value set to false
         List<NameValuePair> postParams = new ArrayList<NameValuePair>();
-        postParams.add(new NameValuePair(SlingPostConstants.RP_OPERATION,
-        						SlingPostConstants.OPERATION_IMPORT));
+        postParams.add(new NameValuePair(SlingPostConstants.RP_OPERATION, SlingPostConstants.OPERATION_IMPORT));
         postParams.add(new NameValuePair(SlingPostConstants.RP_CONTENT_TYPE, "json"));
         postParams.add(new NameValuePair(SlingPostConstants.RP_CHECKIN, "true"));
         postParams.add(new NameValuePair(SlingPostConstants.RP_REPLACE_PROPERTIES, "true"));
         postParams.add(new NameValuePair(SlingPostConstants.RP_AUTO_CHECKOUT, "false"));
         postParams.add(new NameValuePair(SlingPostConstants.RP_CONTENT, "{ \"abc\": \"def2\" }"));
-        assertPostStatus(importedNodeUrl, HttpServletResponse.SC_CONFLICT, postParams, "Expected error from VersionException");
+        assertPostStatus(
+                importedNodeUrl, HttpServletResponse.SC_CONFLICT, postParams, "Expected error from VersionException");
 
-		//3. now try an update with the :autoCheckout value set to true
+        // 3. now try an update with the :autoCheckout value set to true
         postParams.clear();
-        postParams.add(new NameValuePair(SlingPostConstants.RP_OPERATION,
-				SlingPostConstants.OPERATION_IMPORT));
-		postParams.add(new NameValuePair(SlingPostConstants.RP_CONTENT_TYPE, "json"));
-		postParams.add(new NameValuePair(SlingPostConstants.RP_CHECKIN, "true"));
-		postParams.add(new NameValuePair(SlingPostConstants.RP_REPLACE_PROPERTIES, "true"));
-		postParams.add(new NameValuePair(SlingPostConstants.RP_AUTO_CHECKOUT, "true"));
-		postParams.add(new NameValuePair(SlingPostConstants.RP_CONTENT, "{ \"abc\": \"def2\" }"));
-		postParams.add(new NameValuePair(":http-equiv-accept", "application/json,*/*;q=0.9"));
-        HttpMethod post = assertPostStatus(importedNodeUrl, HttpServletResponse.SC_CREATED, postParams, "Expected 201 status");
-        
+        postParams.add(new NameValuePair(SlingPostConstants.RP_OPERATION, SlingPostConstants.OPERATION_IMPORT));
+        postParams.add(new NameValuePair(SlingPostConstants.RP_CONTENT_TYPE, "json"));
+        postParams.add(new NameValuePair(SlingPostConstants.RP_CHECKIN, "true"));
+        postParams.add(new NameValuePair(SlingPostConstants.RP_REPLACE_PROPERTIES, "true"));
+        postParams.add(new NameValuePair(SlingPostConstants.RP_AUTO_CHECKOUT, "true"));
+        postParams.add(new NameValuePair(SlingPostConstants.RP_CONTENT, "{ \"abc\": \"def2\" }"));
+        postParams.add(new NameValuePair(":http-equiv-accept", "application/json,*/*;q=0.9"));
+        HttpMethod post =
+                assertPostStatus(importedNodeUrl, HttpServletResponse.SC_CREATED, postParams, "Expected 201 status");
+
         String responseBodyAsString = post.getResponseBodyAsString();
-		JsonObject responseJSON = JsonUtil.parseObject(responseBodyAsString);
+        JsonObject responseJSON = JsonUtil.parseObject(responseBodyAsString);
         JsonArray changes = responseJSON.getJsonArray("changes");
         JsonObject checkoutChange = changes.getJsonObject(0);
         assertEquals("checkout", checkoutChange.getString("type"));
-		
+
         // assert content at new location
         String content2 = getContent(importedNodeUrl + ".json", CONTENT_TYPE_JSON);
 
-		JsonObject jsonObj2 = JsonUtil.parseObject(content2);
-		assertNotNull(jsonObj2);
-		
-		//make sure it was really updated
-		assertEquals("def2", jsonObj2.getString("abc"));
-		
-		//assert that the versionable node is checked back in.
-		assertFalse(jsonObj.getBoolean("jcr:isCheckedOut"));		
+        JsonObject jsonObj2 = JsonUtil.parseObject(content2);
+        assertNotNull(jsonObj2);
+
+        // make sure it was really updated
+        assertEquals("def2", jsonObj2.getString("abc"));
+
+        // assert that the versionable node is checked back in.
+        assertFalse(jsonObj.getBoolean("jcr:isCheckedOut"));
     }
-    
+
     /**
      * Test import operation for a posted json file
      */
@@ -367,26 +390,32 @@ public class PostServletImportTest extends HttpTestBase {
         urlsToDelete.add(testNode);
 
         props.clear();
-        props.put(SlingPostConstants.RP_OPERATION,
-        		SlingPostConstants.OPERATION_IMPORT);
+        props.put(SlingPostConstants.RP_OPERATION, SlingPostConstants.OPERATION_IMPORT);
 
         String testNodeName = "testNode_" + String.valueOf(random.nextInt());
         props.put(SlingPostConstants.RP_NODE_NAME_HINT, testNodeName);
         testFile = getTestFile(getClass().getResourceAsStream("/integration-test/servlets/post/testimport.json"));
         props.put(SlingPostConstants.RP_CONTENT_TYPE, "json");
         props.put(SlingPostConstants.RP_REDIRECT_TO, SERVLET_CONTEXT + testPath + "/*");
-        String importedNodeUrl = testClient.createNode(HTTP_BASE_URL + testPath, new NameValuePairList(props), null, true,
-        		testFile, SlingPostConstants.RP_CONTENT_FILE, null);
+        String importedNodeUrl = testClient.createNode(
+                HTTP_BASE_URL + testPath,
+                new NameValuePairList(props),
+                null,
+                true,
+                testFile,
+                SlingPostConstants.RP_CONTENT_FILE,
+                null);
 
         // assert content at new location
         String content = getContent(importedNodeUrl + ".3.json", CONTENT_TYPE_JSON);
 
-		JsonObject jsonObj = JsonUtil.parseObject(content);
-		assertNotNull(jsonObj);
+        JsonObject jsonObj = JsonUtil.parseObject(content);
+        assertNotNull(jsonObj);
 
-		//assert the imported content is there.
-        String expectedJsonContent = getStreamAsString(getClass().getResourceAsStream("/integration-test/servlets/post/importresults.json"));
-		assertExpectedJSON(JsonUtil.parseObject(expectedJsonContent), jsonObj);
+        // assert the imported content is there.
+        String expectedJsonContent =
+                getStreamAsString(getClass().getResourceAsStream("/integration-test/servlets/post/importresults.json"));
+        assertExpectedJSON(JsonUtil.parseObject(expectedJsonContent), jsonObj);
     }
 
     /**
@@ -399,27 +428,33 @@ public class PostServletImportTest extends HttpTestBase {
         urlsToDelete.add(testNode);
 
         props.clear();
-        props.put(SlingPostConstants.RP_OPERATION,
-        		SlingPostConstants.OPERATION_IMPORT);
+        props.put(SlingPostConstants.RP_OPERATION, SlingPostConstants.OPERATION_IMPORT);
 
         testFile = getTestFile(getClass().getResourceAsStream("/integration-test/servlets/post/testimport2.json"));
         props.put(SlingPostConstants.RP_CONTENT_TYPE, "json");
         props.put(SlingPostConstants.RP_REDIRECT_TO, SERVLET_CONTEXT + testPath + "/*");
-        String importedNodeUrl = testClient.createNode(HTTP_BASE_URL + testPath, new NameValuePairList(props), null, true,
-        		testFile, SlingPostConstants.RP_CONTENT_FILE, null);
+        String importedNodeUrl = testClient.createNode(
+                HTTP_BASE_URL + testPath,
+                new NameValuePairList(props),
+                null,
+                true,
+                testFile,
+                SlingPostConstants.RP_CONTENT_FILE,
+                null);
 
-        //make sure the name is what was inside the file.
+        // make sure the name is what was inside the file.
         assertTrue(importedNodeUrl.endsWith("/nodeName"));
 
         // assert content at new location
         String content = getContent(importedNodeUrl + ".3.json", CONTENT_TYPE_JSON);
 
-		JsonObject jsonObj = JsonUtil.parseObject(content);
-		assertNotNull(jsonObj);
+        JsonObject jsonObj = JsonUtil.parseObject(content);
+        assertNotNull(jsonObj);
 
-		//assert the imported content is there.
-        String expectedJsonContent = getStreamAsString(getClass().getResourceAsStream("/integration-test/servlets/post/importresults.json"));
-		assertExpectedJSON(JsonUtil.parseObject(expectedJsonContent), jsonObj);
+        // assert the imported content is there.
+        String expectedJsonContent =
+                getStreamAsString(getClass().getResourceAsStream("/integration-test/servlets/post/importresults.json"));
+        assertExpectedJSON(JsonUtil.parseObject(expectedJsonContent), jsonObj);
     }
 
     /**
@@ -432,12 +467,12 @@ public class PostServletImportTest extends HttpTestBase {
         urlsToDelete.add(testNode);
 
         props.clear();
-        props.put(SlingPostConstants.RP_OPERATION,
-        		SlingPostConstants.OPERATION_IMPORT);
+        props.put(SlingPostConstants.RP_OPERATION, SlingPostConstants.OPERATION_IMPORT);
 
         String testNodeName = "testNode_" + String.valueOf(random.nextInt());
         props.put(SlingPostConstants.RP_NODE_NAME_HINT, testNodeName);
-        String jsonContent = getStreamAsString(getClass().getResourceAsStream("/integration-test/servlets/post/testimport.json"));
+        String jsonContent =
+                getStreamAsString(getClass().getResourceAsStream("/integration-test/servlets/post/testimport.json"));
         props.put(SlingPostConstants.RP_CONTENT, jsonContent);
         props.put(SlingPostConstants.RP_CONTENT_TYPE, "json");
         props.put(SlingPostConstants.RP_REDIRECT_TO, SERVLET_CONTEXT + testPath + "/*");
@@ -446,12 +481,13 @@ public class PostServletImportTest extends HttpTestBase {
         // assert content at new location
         String content = getContent(importedNodeUrl + ".3.json", CONTENT_TYPE_JSON);
 
-		JsonObject jsonObj = JsonUtil.parseObject(content);
-		assertNotNull(jsonObj);
+        JsonObject jsonObj = JsonUtil.parseObject(content);
+        assertNotNull(jsonObj);
 
-		//assert the imported content is there.
-        String expectedJsonContent = getStreamAsString(getClass().getResourceAsStream("/integration-test/servlets/post/importresults.json"));
-		assertExpectedJSON(JsonUtil.parseObject(expectedJsonContent), jsonObj);
+        // assert the imported content is there.
+        String expectedJsonContent =
+                getStreamAsString(getClass().getResourceAsStream("/integration-test/servlets/post/importresults.json"));
+        assertExpectedJSON(JsonUtil.parseObject(expectedJsonContent), jsonObj);
     }
 
     /**
@@ -464,27 +500,28 @@ public class PostServletImportTest extends HttpTestBase {
         urlsToDelete.add(testNode);
 
         props.clear();
-        props.put(SlingPostConstants.RP_OPERATION,
-        		SlingPostConstants.OPERATION_IMPORT);
+        props.put(SlingPostConstants.RP_OPERATION, SlingPostConstants.OPERATION_IMPORT);
 
-        String jsonContent = getStreamAsString(getClass().getResourceAsStream("/integration-test/servlets/post/testimport2.json"));
+        String jsonContent =
+                getStreamAsString(getClass().getResourceAsStream("/integration-test/servlets/post/testimport2.json"));
         props.put(SlingPostConstants.RP_CONTENT, jsonContent);
         props.put(SlingPostConstants.RP_CONTENT_TYPE, "json");
         props.put(SlingPostConstants.RP_REDIRECT_TO, SERVLET_CONTEXT + testPath + "/*");
         String importedNodeUrl = testClient.createNode(HTTP_BASE_URL + testPath, props);
 
-        //make sure the name is what was inside the file.
+        // make sure the name is what was inside the file.
         assertTrue(importedNodeUrl.endsWith("/nodeName"));
 
         // assert content at new location
         String content = getContent(importedNodeUrl + ".3.json", CONTENT_TYPE_JSON);
 
-		JsonObject jsonObj = JsonUtil.parseObject(content);
-		assertNotNull(jsonObj);
+        JsonObject jsonObj = JsonUtil.parseObject(content);
+        assertNotNull(jsonObj);
 
-		//assert the imported content is there.
-        String expectedJsonContent = getStreamAsString(getClass().getResourceAsStream("/integration-test/servlets/post/importresults.json"));
-		assertExpectedJSON(JsonUtil.parseObject(expectedJsonContent), jsonObj);
+        // assert the imported content is there.
+        String expectedJsonContent =
+                getStreamAsString(getClass().getResourceAsStream("/integration-test/servlets/post/importresults.json"));
+        assertExpectedJSON(JsonUtil.parseObject(expectedJsonContent), jsonObj);
     }
 
     public void testImportXMLFromFile() throws IOException, JsonException {
@@ -494,26 +531,32 @@ public class PostServletImportTest extends HttpTestBase {
         urlsToDelete.add(testNode);
 
         props.clear();
-        props.put(SlingPostConstants.RP_OPERATION,
-        		SlingPostConstants.OPERATION_IMPORT);
+        props.put(SlingPostConstants.RP_OPERATION, SlingPostConstants.OPERATION_IMPORT);
 
         String testNodeName = "testNode_" + String.valueOf(random.nextInt());
         props.put(SlingPostConstants.RP_NODE_NAME_HINT, testNodeName);
         testFile = getTestFile(getClass().getResourceAsStream("/integration-test/servlets/post/testimport.xml"));
         props.put(SlingPostConstants.RP_CONTENT_TYPE, "xml");
         props.put(SlingPostConstants.RP_REDIRECT_TO, SERVLET_CONTEXT + testPath + "/*");
-        String importedNodeUrl = testClient.createNode(HTTP_BASE_URL + testPath, new NameValuePairList(props), null, true,
-        		testFile, SlingPostConstants.RP_CONTENT_FILE, null);
+        String importedNodeUrl = testClient.createNode(
+                HTTP_BASE_URL + testPath,
+                new NameValuePairList(props),
+                null,
+                true,
+                testFile,
+                SlingPostConstants.RP_CONTENT_FILE,
+                null);
 
         // assert content at new location
         String content = getContent(importedNodeUrl + ".3.json", CONTENT_TYPE_JSON);
 
-		JsonObject jsonObj = JsonUtil.parseObject(content);
-		assertNotNull(jsonObj);
+        JsonObject jsonObj = JsonUtil.parseObject(content);
+        assertNotNull(jsonObj);
 
-		//assert the imported content is there.
-        String expectedJsonContent = getStreamAsString(getClass().getResourceAsStream("/integration-test/servlets/post/importresults.json"));
-		assertExpectedJSON(JsonUtil.parseObject(expectedJsonContent), jsonObj);
+        // assert the imported content is there.
+        String expectedJsonContent =
+                getStreamAsString(getClass().getResourceAsStream("/integration-test/servlets/post/importresults.json"));
+        assertExpectedJSON(JsonUtil.parseObject(expectedJsonContent), jsonObj);
     }
 
     public void testImportXMLFromFileWithoutOptionalName() throws IOException, JsonException {
@@ -523,27 +566,33 @@ public class PostServletImportTest extends HttpTestBase {
         urlsToDelete.add(testNode);
 
         props.clear();
-        props.put(SlingPostConstants.RP_OPERATION,
-        		SlingPostConstants.OPERATION_IMPORT);
+        props.put(SlingPostConstants.RP_OPERATION, SlingPostConstants.OPERATION_IMPORT);
 
         testFile = getTestFile(getClass().getResourceAsStream("/integration-test/servlets/post/testimport2.xml"));
         props.put(SlingPostConstants.RP_CONTENT_TYPE, "xml");
         props.put(SlingPostConstants.RP_REDIRECT_TO, SERVLET_CONTEXT + testPath + "/*");
-        String importedNodeUrl = testClient.createNode(HTTP_BASE_URL + testPath, new NameValuePairList(props), null, true,
-        		testFile, SlingPostConstants.RP_CONTENT_FILE, null);
+        String importedNodeUrl = testClient.createNode(
+                HTTP_BASE_URL + testPath,
+                new NameValuePairList(props),
+                null,
+                true,
+                testFile,
+                SlingPostConstants.RP_CONTENT_FILE,
+                null);
 
-        //make sure the name is what was inside the file.
+        // make sure the name is what was inside the file.
         assertTrue(importedNodeUrl.endsWith("/nodeName"));
 
         // assert content at new location
         String content = getContent(importedNodeUrl + ".3.json", CONTENT_TYPE_JSON);
 
-		JsonObject jsonObj = JsonUtil.parseObject(content);
-		assertNotNull(jsonObj);
+        JsonObject jsonObj = JsonUtil.parseObject(content);
+        assertNotNull(jsonObj);
 
-		//assert the imported content is there.
-        String expectedJsonContent = getStreamAsString(getClass().getResourceAsStream("/integration-test/servlets/post/importresults.json"));
-		assertExpectedJSON(JsonUtil.parseObject(expectedJsonContent), jsonObj);
+        // assert the imported content is there.
+        String expectedJsonContent =
+                getStreamAsString(getClass().getResourceAsStream("/integration-test/servlets/post/importresults.json"));
+        assertExpectedJSON(JsonUtil.parseObject(expectedJsonContent), jsonObj);
     }
 
     public void testImportXMLFromRequestParam() throws IOException, JsonException {
@@ -553,12 +602,12 @@ public class PostServletImportTest extends HttpTestBase {
         urlsToDelete.add(testNode);
 
         props.clear();
-        props.put(SlingPostConstants.RP_OPERATION,
-        		SlingPostConstants.OPERATION_IMPORT);
+        props.put(SlingPostConstants.RP_OPERATION, SlingPostConstants.OPERATION_IMPORT);
 
         String testNodeName = "testNode_" + String.valueOf(random.nextInt());
         props.put(SlingPostConstants.RP_NODE_NAME_HINT, testNodeName);
-        String xmlContent = getStreamAsString(getClass().getResourceAsStream("/integration-test/servlets/post/testimport.xml"));
+        String xmlContent =
+                getStreamAsString(getClass().getResourceAsStream("/integration-test/servlets/post/testimport.xml"));
         props.put(SlingPostConstants.RP_CONTENT, xmlContent);
         props.put(SlingPostConstants.RP_CONTENT_TYPE, "xml");
         props.put(SlingPostConstants.RP_REDIRECT_TO, SERVLET_CONTEXT + testPath + "/*");
@@ -567,12 +616,13 @@ public class PostServletImportTest extends HttpTestBase {
         // assert content at new location
         String content = getContent(importedNodeUrl + ".3.json", CONTENT_TYPE_JSON);
 
-		JsonObject jsonObj = JsonUtil.parseObject(content);
-		assertNotNull(jsonObj);
+        JsonObject jsonObj = JsonUtil.parseObject(content);
+        assertNotNull(jsonObj);
 
-		//assert the imported content is there.
-        String expectedJsonContent = getStreamAsString(getClass().getResourceAsStream("/integration-test/servlets/post/importresults.json"));
-		assertExpectedJSON(JsonUtil.parseObject(expectedJsonContent), jsonObj);
+        // assert the imported content is there.
+        String expectedJsonContent =
+                getStreamAsString(getClass().getResourceAsStream("/integration-test/servlets/post/importresults.json"));
+        assertExpectedJSON(JsonUtil.parseObject(expectedJsonContent), jsonObj);
     }
 
     public void testImportXMLFromRequestParamWithoutOptionalName() throws IOException, JsonException {
@@ -582,29 +632,29 @@ public class PostServletImportTest extends HttpTestBase {
         urlsToDelete.add(testNode);
 
         props.clear();
-        props.put(SlingPostConstants.RP_OPERATION,
-        		SlingPostConstants.OPERATION_IMPORT);
+        props.put(SlingPostConstants.RP_OPERATION, SlingPostConstants.OPERATION_IMPORT);
 
-        String xmlContent = getStreamAsString(getClass().getResourceAsStream("/integration-test/servlets/post/testimport2.xml"));
+        String xmlContent =
+                getStreamAsString(getClass().getResourceAsStream("/integration-test/servlets/post/testimport2.xml"));
         props.put(SlingPostConstants.RP_CONTENT, xmlContent);
         props.put(SlingPostConstants.RP_CONTENT_TYPE, "xml");
         props.put(SlingPostConstants.RP_REDIRECT_TO, SERVLET_CONTEXT + testPath + "/*");
         String importedNodeUrl = testClient.createNode(HTTP_BASE_URL + testPath, props);
 
-        //make sure the name is what was inside the file.
+        // make sure the name is what was inside the file.
         assertTrue(importedNodeUrl.endsWith("/nodeName"));
 
         // assert content at new location
         String content = getContent(importedNodeUrl + ".3.json", CONTENT_TYPE_JSON);
 
-		JsonObject jsonObj = JsonUtil.parseObject(content);
-		assertNotNull(jsonObj);
+        JsonObject jsonObj = JsonUtil.parseObject(content);
+        assertNotNull(jsonObj);
 
-		//assert the imported content is there.
-        String expectedJsonContent = getStreamAsString(getClass().getResourceAsStream("/integration-test/servlets/post/importresults.json"));
-		assertExpectedJSON(JsonUtil.parseObject(expectedJsonContent), jsonObj);
+        // assert the imported content is there.
+        String expectedJsonContent =
+                getStreamAsString(getClass().getResourceAsStream("/integration-test/servlets/post/importresults.json"));
+        assertExpectedJSON(JsonUtil.parseObject(expectedJsonContent), jsonObj);
     }
-
 
     public void testImportZipFromFile() throws IOException, JsonException {
         final String testPath = TEST_BASE_PATH;
@@ -613,26 +663,32 @@ public class PostServletImportTest extends HttpTestBase {
         urlsToDelete.add(testNode);
 
         props.clear();
-        props.put(SlingPostConstants.RP_OPERATION,
-        		SlingPostConstants.OPERATION_IMPORT);
+        props.put(SlingPostConstants.RP_OPERATION, SlingPostConstants.OPERATION_IMPORT);
 
         String testNodeName = "testNode_" + String.valueOf(random.nextInt());
         props.put(SlingPostConstants.RP_NODE_NAME_HINT, testNodeName);
         testFile = getTestFile(getClass().getResourceAsStream("/integration-test/servlets/post/testimport.zip"));
         props.put(SlingPostConstants.RP_CONTENT_TYPE, "zip");
         props.put(SlingPostConstants.RP_REDIRECT_TO, SERVLET_CONTEXT + testPath + "/*");
-        String importedNodeUrl = testClient.createNode(HTTP_BASE_URL + testPath, new NameValuePairList(props), null, true,
-        		testFile, SlingPostConstants.RP_CONTENT_FILE, null);
+        String importedNodeUrl = testClient.createNode(
+                HTTP_BASE_URL + testPath,
+                new NameValuePairList(props),
+                null,
+                true,
+                testFile,
+                SlingPostConstants.RP_CONTENT_FILE,
+                null);
 
         // assert content at new location
         String content = getContent(importedNodeUrl + ".3.json", CONTENT_TYPE_JSON);
 
-		JsonObject jsonObj = JsonUtil.parseObject(content);
-		assertNotNull(jsonObj);
+        JsonObject jsonObj = JsonUtil.parseObject(content);
+        assertNotNull(jsonObj);
 
-		//assert the imported content is there.
-        String expectedJsonContent = getStreamAsString(getClass().getResourceAsStream("/integration-test/servlets/post/testimportzip.json"));
-		assertExpectedJSON(JsonUtil.parseObject(expectedJsonContent), jsonObj);
+        // assert the imported content is there.
+        String expectedJsonContent =
+                getStreamAsString(getClass().getResourceAsStream("/integration-test/servlets/post/testimportzip.json"));
+        assertExpectedJSON(JsonUtil.parseObject(expectedJsonContent), jsonObj);
     }
 
     public void testImportJarFromFile() throws IOException, JsonException {
@@ -642,28 +698,33 @@ public class PostServletImportTest extends HttpTestBase {
         urlsToDelete.add(testNode);
 
         props.clear();
-        props.put(SlingPostConstants.RP_OPERATION,
-        		SlingPostConstants.OPERATION_IMPORT);
+        props.put(SlingPostConstants.RP_OPERATION, SlingPostConstants.OPERATION_IMPORT);
 
         String testNodeName = "testNode_" + String.valueOf(random.nextInt());
         props.put(SlingPostConstants.RP_NODE_NAME_HINT, testNodeName);
         testFile = getTestFile(getClass().getResourceAsStream("/integration-test/servlets/post/testimport.jar"));
         props.put(SlingPostConstants.RP_CONTENT_TYPE, "jar");
         props.put(SlingPostConstants.RP_REDIRECT_TO, SERVLET_CONTEXT + testPath + "/*");
-        String importedNodeUrl = testClient.createNode(HTTP_BASE_URL + testPath, new NameValuePairList(props), null, true,
-        		testFile, SlingPostConstants.RP_CONTENT_FILE, null);
+        String importedNodeUrl = testClient.createNode(
+                HTTP_BASE_URL + testPath,
+                new NameValuePairList(props),
+                null,
+                true,
+                testFile,
+                SlingPostConstants.RP_CONTENT_FILE,
+                null);
 
         // assert content at new location
         String content = getContent(importedNodeUrl + ".3.json", CONTENT_TYPE_JSON);
 
-		JsonObject jsonObj = JsonUtil.parseObject(content);
-		assertNotNull(jsonObj);
+        JsonObject jsonObj = JsonUtil.parseObject(content);
+        assertNotNull(jsonObj);
 
-		//assert the imported content is there.
-        String expectedJsonContent = getStreamAsString(getClass().getResourceAsStream("/integration-test/servlets/post/testimportzip.json"));
-		assertExpectedJSON(JsonUtil.parseObject(expectedJsonContent), jsonObj);
+        // assert the imported content is there.
+        String expectedJsonContent =
+                getStreamAsString(getClass().getResourceAsStream("/integration-test/servlets/post/testimportzip.json"));
+        assertExpectedJSON(JsonUtil.parseObject(expectedJsonContent), jsonObj);
     }
-
 
     public void testImportJCRXMLFromFile() throws IOException, JsonException {
         final String testPath = TEST_BASE_PATH;
@@ -672,30 +733,33 @@ public class PostServletImportTest extends HttpTestBase {
         urlsToDelete.add(testNode);
 
         props.clear();
-        props.put(SlingPostConstants.RP_OPERATION,
-        		SlingPostConstants.OPERATION_IMPORT);
+        props.put(SlingPostConstants.RP_OPERATION, SlingPostConstants.OPERATION_IMPORT);
 
         String testNodeName = "testnode_1287021810";
         props.put(SlingPostConstants.RP_NODE_NAME, testNodeName);
         testFile = getTestFile(getClass().getResourceAsStream("/integration-test/servlets/post/testimport.jcr.xml"));
         props.put(SlingPostConstants.RP_CONTENT_TYPE, "jcr.xml");
         props.put(SlingPostConstants.RP_REDIRECT_TO, SERVLET_CONTEXT + testPath + "/*");
-        String importedNodeUrl = testClient.createNode(HTTP_BASE_URL + testPath, new NameValuePairList(props), null, true,
-        		testFile, SlingPostConstants.RP_CONTENT_FILE, null);
+        String importedNodeUrl = testClient.createNode(
+                HTTP_BASE_URL + testPath,
+                new NameValuePairList(props),
+                null,
+                true,
+                testFile,
+                SlingPostConstants.RP_CONTENT_FILE,
+                null);
 
         // assert content at new location
         String content = getContent(importedNodeUrl + ".3.json", CONTENT_TYPE_JSON);
 
-		JsonObject jsonObj = JsonUtil.parseObject(content);
-		assertNotNull(jsonObj);
+        JsonObject jsonObj = JsonUtil.parseObject(content);
+        assertNotNull(jsonObj);
 
-		//assert the imported content is there.
-        String expectedJsonContent = getStreamAsString(getClass().getResourceAsStream("/integration-test/servlets/post/importresults.json"));
-		assertExpectedJSON(JsonUtil.parseObject(expectedJsonContent), jsonObj);
+        // assert the imported content is there.
+        String expectedJsonContent =
+                getStreamAsString(getClass().getResourceAsStream("/integration-test/servlets/post/importresults.json"));
+        assertExpectedJSON(JsonUtil.parseObject(expectedJsonContent), jsonObj);
     }
-
-
-
 
     protected String importNodeWithExactName(String testNodeName) throws IOException, JsonException {
         final String testPath = TEST_BASE_PATH;
@@ -704,11 +768,11 @@ public class PostServletImportTest extends HttpTestBase {
         urlsToDelete.add(testNode);
 
         props.clear();
-        props.put(SlingPostConstants.RP_OPERATION,
-        		SlingPostConstants.OPERATION_IMPORT);
+        props.put(SlingPostConstants.RP_OPERATION, SlingPostConstants.OPERATION_IMPORT);
 
         props.put(SlingPostConstants.RP_NODE_NAME, testNodeName);
-        String jsonContent = getStreamAsString(getClass().getResourceAsStream("/integration-test/servlets/post/testimport.json"));
+        String jsonContent =
+                getStreamAsString(getClass().getResourceAsStream("/integration-test/servlets/post/testimport.json"));
         props.put(SlingPostConstants.RP_CONTENT, jsonContent);
         props.put(SlingPostConstants.RP_CONTENT_TYPE, "json");
         props.put(SlingPostConstants.RP_REDIRECT_TO, SERVLET_CONTEXT + testPath + "/*");
@@ -717,30 +781,34 @@ public class PostServletImportTest extends HttpTestBase {
         // assert content at new location
         String content = getContent(location + ".3.json", CONTENT_TYPE_JSON);
 
-		JsonObject jsonObj = JsonUtil.parseObject(content);
-		assertNotNull(jsonObj);
+        JsonObject jsonObj = JsonUtil.parseObject(content);
+        assertNotNull(jsonObj);
 
-		//assert the imported content is there.
-        String expectedJsonContent = getStreamAsString(getClass().getResourceAsStream("/integration-test/servlets/post/importresults.json"));
-		assertExpectedJSON(JsonUtil.parseObject(expectedJsonContent), jsonObj);
+        // assert the imported content is there.
+        String expectedJsonContent =
+                getStreamAsString(getClass().getResourceAsStream("/integration-test/servlets/post/importresults.json"));
+        assertExpectedJSON(JsonUtil.parseObject(expectedJsonContent), jsonObj);
 
-    	assertHttpStatus(location + DEFAULT_EXT, HttpServletResponse.SC_OK,
+        assertHttpStatus(
+                location + DEFAULT_EXT,
+                HttpServletResponse.SC_OK,
                 "POST must redirect to created resource (" + location + ")");
-        assertTrue("Node (" + location + ") must have exact name",
-                !location.endsWith("/*"));
-        assertTrue("Node (" + location + ") must created be under POST URL (" + testNode + ")",
+        assertTrue("Node (" + location + ") must have exact name", !location.endsWith("/*"));
+        assertTrue(
+                "Node (" + location + ") must created be under POST URL (" + testNode + ")",
                 location.contains(testNode + "/"));
-        assertTrue("Node (" + location + ") must have exact name '" + testNodeName + "'",
-        		location.endsWith("/" + testNodeName));
+        assertTrue(
+                "Node (" + location + ") must have exact name '" + testNodeName + "'",
+                location.endsWith("/" + testNodeName));
 
-		return location;
+        return location;
     }
 
     /**
      * SLING-1091: test create node with an exact node name (no filtering)
      */
     public void testImportNodeWithExactName() throws IOException, JsonException {
-    	importNodeWithExactName("exactNodeName");
+        importNodeWithExactName("exactNodeName");
     }
 
     /**
@@ -753,17 +821,18 @@ public class PostServletImportTest extends HttpTestBase {
         String testNode = testClient.createNode(HTTP_BASE_URL + testPath, props);
         urlsToDelete.add(testNode);
 
-		List<NameValuePair> postParams = new ArrayList<NameValuePair>();
-		postParams.add(new NameValuePair(SlingPostConstants.RP_OPERATION, SlingPostConstants.OPERATION_IMPORT));
-		postParams.add(new NameValuePair(SlingPostConstants.RP_NODE_NAME, "exactNodeName*"));
-        String jsonContent = getStreamAsString(getClass().getResourceAsStream("/integration-test/servlets/post/testimport.json"));
-		postParams.add(new NameValuePair(SlingPostConstants.RP_CONTENT, jsonContent));
-		postParams.add(new NameValuePair(SlingPostConstants.RP_CONTENT_TYPE, "json"));
-		postParams.add(new NameValuePair(SlingPostConstants.RP_REDIRECT_TO, SERVLET_CONTEXT + testPath + "/*"));
+        List<NameValuePair> postParams = new ArrayList<NameValuePair>();
+        postParams.add(new NameValuePair(SlingPostConstants.RP_OPERATION, SlingPostConstants.OPERATION_IMPORT));
+        postParams.add(new NameValuePair(SlingPostConstants.RP_NODE_NAME, "exactNodeName*"));
+        String jsonContent =
+                getStreamAsString(getClass().getResourceAsStream("/integration-test/servlets/post/testimport.json"));
+        postParams.add(new NameValuePair(SlingPostConstants.RP_CONTENT, jsonContent));
+        postParams.add(new NameValuePair(SlingPostConstants.RP_CONTENT_TYPE, "json"));
+        postParams.add(new NameValuePair(SlingPostConstants.RP_REDIRECT_TO, SERVLET_CONTEXT + testPath + "/*"));
 
-        //expect a 409 status since the name is invalid
+        // expect a 409 status since the name is invalid
         String location = HTTP_BASE_URL + testPath;
-		assertPostStatus(location, HttpServletResponse.SC_CONFLICT, postParams, null);
+        assertPostStatus(location, HttpServletResponse.SC_CONFLICT, postParams, null);
     }
 
     /**
@@ -771,17 +840,20 @@ public class PostServletImportTest extends HttpTestBase {
      * already used node name.
      */
     public void testImportNodeWithAlreadyUsedExactName() throws IOException, JsonException {
-    	String testNodeName = "alreadyUsedExactNodeName";
-    	String location = importNodeWithExactName(testNodeName);
+        String testNodeName = "alreadyUsedExactNodeName";
+        String location = importNodeWithExactName(testNodeName);
 
-
-        //try to create the same node again, since same name siblings are not allowed an error should be
+        // try to create the same node again, since same name siblings are not allowed an error should be
         // thrown
-		List<NameValuePair> postParams = new ArrayList<NameValuePair>();
-		postParams.add(new NameValuePair(SlingPostConstants.RP_NODE_NAME, testNodeName));
-		//expect a 500 status since the name is not unique
-		String postUrl = location.substring(0, location.lastIndexOf('/'));
-		assertPostStatus(postUrl + SlingPostConstants.DEFAULT_CREATE_SUFFIX, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, postParams, null);
+        List<NameValuePair> postParams = new ArrayList<NameValuePair>();
+        postParams.add(new NameValuePair(SlingPostConstants.RP_NODE_NAME, testNodeName));
+        // expect a 500 status since the name is not unique
+        String postUrl = location.substring(0, location.lastIndexOf('/'));
+        assertPostStatus(
+                postUrl + SlingPostConstants.DEFAULT_CREATE_SUFFIX,
+                HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                postParams,
+                null);
     }
 
     /**
@@ -794,12 +866,12 @@ public class PostServletImportTest extends HttpTestBase {
         urlsToDelete.add(testNode);
 
         props.clear();
-        props.put(SlingPostConstants.RP_OPERATION,
-        		SlingPostConstants.OPERATION_IMPORT);
+        props.put(SlingPostConstants.RP_OPERATION, SlingPostConstants.OPERATION_IMPORT);
 
         String testNodeName = "testNode_" + String.valueOf(random.nextInt());
         props.put(SlingPostConstants.RP_NODE_NAME_HINT, testNodeName);
-        final String jsonContent = getStreamAsString(getClass().getResourceAsStream("/integration-test/servlets/post/testimport_utf8.json"), "UTF-8");
+        final String jsonContent = getStreamAsString(
+                getClass().getResourceAsStream("/integration-test/servlets/post/testimport_utf8.json"), "UTF-8");
         props.put(SlingPostConstants.RP_CONTENT, jsonContent);
         props.put(SlingPostConstants.RP_CONTENT_TYPE, "json");
         props.put(SlingPostConstants.RP_REDIRECT_TO, SERVLET_CONTEXT + testPath + "/*");
@@ -809,11 +881,10 @@ public class PostServletImportTest extends HttpTestBase {
         // assert content at new location
         String content = getContent(importedNodeUrl + ".json", CONTENT_TYPE_JSON);
 
-		JsonObject jsonObj = JsonUtil.parseObject(content);
-		assertNotNull(jsonObj);
+        JsonObject jsonObj = JsonUtil.parseObject(content);
+        assertNotNull(jsonObj);
 
-		//assert the imported content is there.
-		assertExpectedJSON(JsonUtil.parseObject(jsonContent), jsonObj);
+        // assert the imported content is there.
+        assertExpectedJSON(JsonUtil.parseObject(jsonContent), jsonObj);
     }
-
 }

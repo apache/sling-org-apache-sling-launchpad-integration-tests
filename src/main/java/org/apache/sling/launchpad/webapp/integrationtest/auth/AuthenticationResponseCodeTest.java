@@ -1,31 +1,29 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements. See the NOTICE file distributed with this
- * work for additional information regarding copyright ownership. The ASF
- * licenses this file to You under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.launchpad.webapp.integrationtest.auth;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import javax.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.Header;
@@ -43,6 +41,10 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 /**
  * Test of the response code from an authentication request depending on various
  * request parameters and headers including j_validate, Ajax detection, and
@@ -59,7 +61,7 @@ public class AuthenticationResponseCodeTest {
     public void setup() throws Exception {
         H.setUp();
     }
-    
+
     @After
     public void cleanup() throws Exception {
         H.tearDown();
@@ -71,14 +73,14 @@ public class AuthenticationResponseCodeTest {
         params.add(new NameValuePair("j_username", "admin"));
         params.add(new NameValuePair("j_password", "admin"));
         params.add(new NameValuePair("j_validate", "true"));
-        HttpMethod post = H.assertPostStatus(HttpTest.HTTP_BASE_URL + "/j_security_check", HttpServletResponse.SC_OK,
-                params, null);
+        HttpMethod post = H.assertPostStatus(
+                HttpTest.HTTP_BASE_URL + "/j_security_check", HttpServletResponse.SC_OK, params, null);
         assertTrue(post.getResponseBodyAsString().length() == 0);
 
         List<NameValuePair> params2 = new ArrayList<NameValuePair>();
         params2.add(new NameValuePair("j_validate", "true"));
-        HttpMethod post2 = H.assertPostStatus(HttpTest.HTTP_BASE_URL + "/j_security_check", HttpServletResponse.SC_OK,
-                params2, null);
+        HttpMethod post2 = H.assertPostStatus(
+                HttpTest.HTTP_BASE_URL + "/j_security_check", HttpServletResponse.SC_OK, params2, null);
         assertTrue(post2.getResponseBodyAsString().length() == 0);
     }
 
@@ -86,8 +88,8 @@ public class AuthenticationResponseCodeTest {
     public void testValidatingCorrectHttpBasicCredentials() throws Exception {
         List<NameValuePair> params = new ArrayList<NameValuePair>();
         params.add(new NameValuePair("j_validate", "true"));
-        HttpMethod post = H.assertPostStatus(HttpTest.HTTP_BASE_URL + "/j_security_check", HttpServletResponse.SC_OK,
-                params, null);
+        HttpMethod post = H.assertPostStatus(
+                HttpTest.HTTP_BASE_URL + "/j_security_check", HttpServletResponse.SC_OK, params, null);
         assertTrue(post.getResponseBodyAsString().length() == 0);
 
         HttpMethod get = H.assertHttpStatus(HttpTest.HTTP_BASE_URL + "/?j_validate=true", HttpServletResponse.SC_OK);
@@ -100,8 +102,8 @@ public class AuthenticationResponseCodeTest {
         params.add(new NameValuePair("j_username", "garbage"));
         params.add(new NameValuePair("j_password", "garbage"));
         params.add(new NameValuePair("j_validate", "true"));
-        HttpMethod post = H.assertPostStatus(HttpTest.HTTP_BASE_URL + "/j_security_check",
-                HttpServletResponse.SC_FORBIDDEN, params, null);
+        HttpMethod post = H.assertPostStatus(
+                HttpTest.HTTP_BASE_URL + "/j_security_check", HttpServletResponse.SC_FORBIDDEN, params, null);
         assertNotNull(post.getResponseHeader("X-Reason"));
     }
 
@@ -113,8 +115,8 @@ public class AuthenticationResponseCodeTest {
         List<Header> headers = new ArrayList<Header>();
         headers.add(new Header("Cookie", "sling.formauth=garbage"));
 
-        HttpMethod post = assertPostStatus(HttpTest.HTTP_BASE_URL + "/j_security_check",
-                HttpServletResponse.SC_FORBIDDEN, params, headers, null);
+        HttpMethod post = assertPostStatus(
+                HttpTest.HTTP_BASE_URL + "/j_security_check", HttpServletResponse.SC_FORBIDDEN, params, headers, null);
         assertXReason(post);
     }
 
@@ -124,17 +126,18 @@ public class AuthenticationResponseCodeTest {
         // assume http and webdav are on the same host + port
         URL url = new URL(HttpTest.HTTP_BASE_URL);
         Credentials defaultcreds = new UsernamePasswordCredentials("garbage", "garbage");
-        H.getHttpClient().getState()
+        H.getHttpClient()
+                .getState()
                 .setCredentials(new AuthScope(url.getHost(), url.getPort(), AuthScope.ANY_REALM), defaultcreds);
 
         List<NameValuePair> params = new ArrayList<NameValuePair>();
         params.add(new NameValuePair("j_validate", "true"));
-        HttpMethod post = H.assertPostStatus(HttpTest.HTTP_BASE_URL + "/j_security_check",
-                HttpServletResponse.SC_FORBIDDEN, params, null);
+        HttpMethod post = H.assertPostStatus(
+                HttpTest.HTTP_BASE_URL + "/j_security_check", HttpServletResponse.SC_FORBIDDEN, params, null);
         assertXReason(post);
 
-        HttpMethod get = H.assertHttpStatus(HttpTest.HTTP_BASE_URL + "/?j_validate=true",
-                HttpServletResponse.SC_FORBIDDEN);
+        HttpMethod get =
+                H.assertHttpStatus(HttpTest.HTTP_BASE_URL + "/?j_validate=true", HttpServletResponse.SC_FORBIDDEN);
         assertXReason(get);
     }
 
@@ -144,7 +147,8 @@ public class AuthenticationResponseCodeTest {
         // assume http and webdav are on the same host + port
         URL url = new URL(HttpTest.HTTP_BASE_URL);
         Credentials defaultcreds = new UsernamePasswordCredentials("garbage", "garbage");
-        H.getHttpClient().getState()
+        H.getHttpClient()
+                .getState()
                 .setCredentials(new AuthScope(url.getHost(), url.getPort(), AuthScope.ANY_REALM), defaultcreds);
 
         final String requestUrl = HttpTest.HTTP_BASE_URL + "/junk?param1=1";
@@ -168,7 +172,9 @@ public class AuthenticationResponseCodeTest {
 
         HttpMethod post = assertPostStatus(requestUrl, HttpServletResponse.SC_FORBIDDEN, params, headers, null);
         assertNotNull(post.getResponseHeader("X-Reason"));
-        assertEquals("Username and Password do not match", post.getResponseHeader("X-Reason").getValue());
+        assertEquals(
+                "Username and Password do not match",
+                post.getResponseHeader("X-Reason").getValue());
     }
 
     @Test
@@ -181,10 +187,12 @@ public class AuthenticationResponseCodeTest {
         headers.add(new Header("X-Requested-With", "XMLHttpRequest"));
         headers.add(new Header("User-Agent", "Mozilla/5.0 Sling Integration Test"));
 
-        HttpMethod post = assertPostStatus(HttpTest.HTTP_BASE_URL + "/j_security_check",
-                HttpServletResponse.SC_FORBIDDEN, params, headers, null);
+        HttpMethod post = assertPostStatus(
+                HttpTest.HTTP_BASE_URL + "/j_security_check", HttpServletResponse.SC_FORBIDDEN, params, headers, null);
         assertNotNull(post.getResponseHeader("X-Reason"));
-        assertEquals("Username and Password do not match", post.getResponseHeader("X-Reason").getValue());
+        assertEquals(
+                "Username and Password do not match",
+                post.getResponseHeader("X-Reason").getValue());
     }
 
     @Test
@@ -193,8 +201,8 @@ public class AuthenticationResponseCodeTest {
         params.add(new NameValuePair("j_username", "garbage"));
         params.add(new NameValuePair("j_password", "garbage"));
 
-        H.assertPostStatus(HttpTest.HTTP_BASE_URL + "/j_security_check", HttpServletResponse.SC_UNAUTHORIZED, params,
-                null);
+        H.assertPostStatus(
+                HttpTest.HTTP_BASE_URL + "/j_security_check", HttpServletResponse.SC_UNAUTHORIZED, params, null);
     }
 
     @Test
@@ -206,13 +214,22 @@ public class AuthenticationResponseCodeTest {
         List<Header> headers = new ArrayList<Header>();
         headers.add(new Header("User-Agent", "Mozilla/5.0 Sling Integration Test"));
 
-        assertPostStatus(HttpTest.HTTP_BASE_URL + "/j_security_check", HttpServletResponse.SC_MOVED_TEMPORARILY, params, headers,
+        assertPostStatus(
+                HttpTest.HTTP_BASE_URL + "/j_security_check",
+                HttpServletResponse.SC_MOVED_TEMPORARILY,
+                params,
+                headers,
                 null);
     }
 
     // TODO - move this method into commons.testing
-    protected HttpMethod assertPostStatus(String url, int expectedStatusCode, List<NameValuePair> postParams,
-            List<Header> headers, String assertMessage) throws IOException {
+    protected HttpMethod assertPostStatus(
+            String url,
+            int expectedStatusCode,
+            List<NameValuePair> postParams,
+            List<Header> headers,
+            String assertMessage)
+            throws IOException {
         final PostMethod post = new PostMethod(url);
         post.setFollowRedirects(false);
 

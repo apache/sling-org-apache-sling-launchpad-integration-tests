@@ -1,27 +1,29 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements. See the NOTICE file distributed with this
- * work for additional information regarding copyright ownership. The ASF
- * licenses this file to You under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.launchpad.webapp.integrationtest.servlets.post;
+
+import javax.json.JsonArray;
+import javax.json.JsonObject;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.json.JsonArray;
-import javax.json.JsonObject;
 
 import org.apache.sling.commons.testing.integration.HttpTestBase;
 import org.apache.sling.commons.testing.integration.NameValuePairList;
@@ -51,23 +53,23 @@ public class ReferenceTypeHintTest extends HttpTestBase {
         super.setUp();
         postUrl = HTTP_BASE_URL + TEST_BASE_PATH + "/" + System.currentTimeMillis();
 
-
-        Map<String,String> m = new HashMap<String,String>();
+        Map<String, String> m = new HashMap<String, String>();
         m.put("sv", "http://www.jcp.org/jcr/sv/1.0");
 
         NamespaceContext ctx = new SimpleNamespaceContext(m);
         XMLUnit.setXpathNamespaceContext(ctx);
 
-
         final NameValuePairList props = new NameValuePairList();
         props.add("a", "");
         props.add("jcr:mixinTypes", "mix:referenceable");
 
-        firstCreatedNodeUrl = testClient.createNode(postUrl + SlingPostConstants.DEFAULT_CREATE_SUFFIX, props, null, false);
+        firstCreatedNodeUrl =
+                testClient.createNode(postUrl + SlingPostConstants.DEFAULT_CREATE_SUFFIX, props, null, false);
         firstUuid = getProperty(firstCreatedNodeUrl, "jcr:uuid");
         firstPath = getPath(firstCreatedNodeUrl);
 
-        secondCreatedNodeUrl = testClient.createNode(postUrl + SlingPostConstants.DEFAULT_CREATE_SUFFIX, props, null, false);
+        secondCreatedNodeUrl =
+                testClient.createNode(postUrl + SlingPostConstants.DEFAULT_CREATE_SUFFIX, props, null, false);
         secondUuid = getProperty(secondCreatedNodeUrl, "jcr:uuid");
         secondPath = getPath(secondCreatedNodeUrl);
     }
@@ -84,8 +86,8 @@ public class ReferenceTypeHintTest extends HttpTestBase {
         props.add("ws", firstUuid);
         props.add("ws", secondUuid);
         props.add("ws@TypeHint", "WeakReference[]");
-        final String referencingNodeUrl = testClient.createNode(postUrl + SlingPostConstants.DEFAULT_CREATE_SUFFIX,
-                props, null, false);
+        final String referencingNodeUrl =
+                testClient.createNode(postUrl + SlingPostConstants.DEFAULT_CREATE_SUFFIX, props, null, false);
 
         verifyReferences(referencingNodeUrl);
     }
@@ -102,8 +104,8 @@ public class ReferenceTypeHintTest extends HttpTestBase {
         props.add("ws", firstPath);
         props.add("ws", secondPath);
         props.add("ws@TypeHint", "WeakReference[]");
-        final String referencingNodeUrl = testClient.createNode(postUrl + SlingPostConstants.DEFAULT_CREATE_SUFFIX,
-                props, null, false);
+        final String referencingNodeUrl =
+                testClient.createNode(postUrl + SlingPostConstants.DEFAULT_CREATE_SUFFIX, props, null, false);
 
         verifyReferences(referencingNodeUrl);
     }

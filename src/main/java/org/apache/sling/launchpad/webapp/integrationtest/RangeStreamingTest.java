@@ -40,11 +40,9 @@ public class RangeStreamingTest extends HttpTestBase {
 
         // Create the test nodes under a path that's specific to this class to
         // allow collisions
-        final String path = "/" + getClass().getSimpleName() + "/"
-            + System.currentTimeMillis();
+        final String path = "/" + getClass().getSimpleName() + "/" + System.currentTimeMillis();
         testClient.mkdirs(WEBDAV_BASE_URL, path);
-        rootUrl = uploadTestScript(path, "rangestreaming.txt",
-            "rangestreaming.txt");
+        rootUrl = uploadTestScript(path, "rangestreaming.txt", "rangestreaming.txt");
     }
 
     @Override
@@ -122,46 +120,41 @@ public class RangeStreamingTest extends HttpTestBase {
         assertEquals("Expect 206/PARTIAL CONTENT", 206, status);
 
         String contentType = get.getResponseHeader("Content-Type").getValue();
-        assertTrue("Content Type must be multipart/byteranges",
-            contentType.contains("multipart/byteranges"));
-        String boundary = contentType.substring(contentType.indexOf("boundary=")
-            + "boundary=".length());
+        assertTrue("Content Type must be multipart/byteranges", contentType.contains("multipart/byteranges"));
+        String boundary = contentType.substring(contentType.indexOf("boundary=") + "boundary=".length());
 
-        BufferedReader reader = new BufferedReader(new InputStreamReader(
-            get.getResponseBodyAsStream()));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(get.getResponseBodyAsStream()));
 
         String line = reader.readLine();
         while (!("--" + boundary).equals(line)) {
             line = reader.readLine();
         }
 
-        assertEquals("Expected content to start with boundary",
-            "--" + boundary, line);
+        assertEquals("Expected content to start with boundary", "--" + boundary, line);
         assertEntityHeaders(reader, "text/plain", "bytes 0-9/79");
         assertEquals("The quick ", reader.readLine());
 
-        assertEquals("Expected content to start with boundary",
-            "--" + boundary, reader.readLine());
+        assertEquals("Expected content to start with boundary", "--" + boundary, reader.readLine());
         assertEntityHeaders(reader, "text/plain", "bytes 69-78/79");
         assertEquals("corpus sic", reader.readLine());
 
         char[] buf = new char[boundary.length() + 4];
         reader.read(buf);
-        assertEquals("Expected content to start with boundary", "--" + boundary
-            + "--", new String(buf));
+        assertEquals("Expected content to start with boundary", "--" + boundary + "--", new String(buf));
     }
 
-    private void assertEntityHeaders(final BufferedReader reader,
-            final String expectedContentType, final String expectedRange)
+    private void assertEntityHeaders(
+            final BufferedReader reader, final String expectedContentType, final String expectedRange)
             throws IOException {
         for (String line = reader.readLine(); line != null; line = reader.readLine()) {
             line = line.toLowerCase();
             if (line.startsWith("content-type:")) {
-                assertTrue("Wrong content type: " + line + "; expected="
-                    + expectedContentType, line.contains(expectedContentType));
+                assertTrue(
+                        "Wrong content type: " + line + "; expected=" + expectedContentType,
+                        line.contains(expectedContentType));
             } else if (line.startsWith("content-range:")) {
-                assertTrue("Wrong content range: " + line + "; expected="
-                    + expectedRange, line.contains(expectedRange));
+                assertTrue(
+                        "Wrong content range: " + line + "; expected=" + expectedRange, line.contains(expectedRange));
             } else if (line.length() == 0) {
                 return;
             }

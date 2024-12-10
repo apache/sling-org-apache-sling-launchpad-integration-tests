@@ -33,8 +33,7 @@ public class SLING457Test extends RenderingTestBase {
     protected void setUp() throws Exception {
         super.setUp();
 
-        final String testRootPathBare = "/libs/" + getClass().getSimpleName() + "/"
-            + System.currentTimeMillis();
+        final String testRootPathBare = "/libs/" + getClass().getSimpleName() + "/" + System.currentTimeMillis();
         final String testRootPath = HTTP_BASE_URL + testRootPathBare;
 
         // the root for our tests
@@ -64,7 +63,6 @@ public class SLING457Test extends RenderingTestBase {
 
         uploadTestScript(rtA, "issues/sling457/a-foo.html.jsp", "foo.html.jsp");
         uploadTestScript(rtB, "issues/sling457/b-b.jsp", "b.jsp");
-
     }
 
     @Override
@@ -76,14 +74,12 @@ public class SLING457Test extends RenderingTestBase {
     public void testCallFooHtml() throws Exception {
         String url = contentUrl + ".foo.html";
         String content = getContent(url, CONTENT_TYPE_HTML);
-        assertTrue("Expected 'foo.html.jsp' in content",
-            content.indexOf("foo.html.jsp") >= 0);
+        assertTrue("Expected 'foo.html.jsp' in content", content.indexOf("foo.html.jsp") >= 0);
     }
 
     public void testCallHtml() throws Exception {
         String url = contentUrl + ".html";
         String content = getContent(url, CONTENT_TYPE_HTML);
-        assertTrue("Expected 'foo.html.jsp' in content",
-            content.indexOf("foo.html.jsp") >= 0);
+        assertTrue("Expected 'foo.html.jsp' in content", content.indexOf("foo.html.jsp") >= 0);
     }
 }

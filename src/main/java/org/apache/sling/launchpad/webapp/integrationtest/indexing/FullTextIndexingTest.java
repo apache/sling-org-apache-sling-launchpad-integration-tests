@@ -18,9 +18,6 @@
  */
 package org.apache.sling.launchpad.webapp.integrationtest.indexing;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-
 import java.io.InputStream;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -37,10 +34,14 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+
 /**
  * The <tt>FullTextIndexingTest</tt> verifies that a PDF file which is uploaded will have its contents indexed and
  * available for full-text searches, in several different paths.
- * 
+ *
  */
 @RunWith(Parameterized.class)
 public class FullTextIndexingTest {
@@ -51,15 +52,15 @@ public class FullTextIndexingTest {
     private final String fileName;
     private final String expectedText;
 
-    @Parameters(name="{index} - {0}")
+    @Parameters(name = "{index} - {0}")
     public static Collection<Object[]> data() {
-        final List<Object []> result = new ArrayList<Object []>();
-        result.add(new Object[] { "lorem-ipsum.pdf", "Excepteur", "/tmp/test-" });
-        result.add(new Object[] { "another.pdf", "some text that we will search for", "/var/test-" });
-        result.add(new Object[] { "french.pdf", "un autre PDF pour le test fulltext", "/libs/test-" });
+        final List<Object[]> result = new ArrayList<Object[]>();
+        result.add(new Object[] {"lorem-ipsum.pdf", "Excepteur", "/tmp/test-"});
+        result.add(new Object[] {"another.pdf", "some text that we will search for", "/var/test-"});
+        result.add(new Object[] {"french.pdf", "un autre PDF pour le test fulltext", "/libs/test-"});
         return result;
     }
-    
+
     public FullTextIndexingTest(String filename, String expectedText, String uploadPathPrefix) {
         this.fileName = filename;
         this.expectedText = expectedText;
@@ -69,12 +70,14 @@ public class FullTextIndexingTest {
     @Test
     public void testUploadedPdfIsIndexed() throws Exception {
 
-        final String queryUrl = HttpTest.WEBDAV_BASE_URL + "/testing/fullTextQuery?q=" + URLEncoder.encode(expectedText, "UTF-8");
-        
+        final String queryUrl =
+                HttpTest.WEBDAV_BASE_URL + "/testing/fullTextQuery?q=" + URLEncoder.encode(expectedText, "UTF-8");
+
         final Condition c = new Condition() {
 
             public boolean isTrue() throws Exception {
-                String result = H.getContent(queryUrl, HttpTest.CONTENT_TYPE_PLAIN).trim();
+                String result =
+                        H.getContent(queryUrl, HttpTest.CONTENT_TYPE_PLAIN).trim();
                 return result.equals(uploadPath + "/" + fileName + "/" + JcrConstants.JCR_CONTENT);
             }
 
@@ -82,16 +85,16 @@ public class FullTextIndexingTest {
                 return "A document containing '" + expectedText + "' is found under " + uploadPath;
             }
         };
-        
+
         assertFalse("Expecting search to return nothing before upload", c.isTrue());
-        
+
         String localPath = "/integration-test/indexing/" + fileName;
         InputStream resourceToUpload = getClass().getResourceAsStream(localPath);
-        if (resourceToUpload == null)
-            throw new IllegalArgumentException("No resource to upload found at " + localPath);
+        if (resourceToUpload == null) throw new IllegalArgumentException("No resource to upload found at " + localPath);
 
         H.getTestClient().mkdirs(HttpTest.WEBDAV_BASE_URL, uploadPath);
-        final int status = H.getTestClient().upload(HttpTest.WEBDAV_BASE_URL + uploadPath + "/" + fileName, resourceToUpload);
+        final int status =
+                H.getTestClient().upload(HttpTest.WEBDAV_BASE_URL + uploadPath + "/" + fileName, resourceToUpload);
         assertEquals("Upload status code", 201, status);
 
         new RetryLoop(c, 15, 50);

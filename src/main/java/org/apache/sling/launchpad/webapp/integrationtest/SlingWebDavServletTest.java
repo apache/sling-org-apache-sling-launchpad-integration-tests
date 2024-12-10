@@ -18,12 +18,11 @@
  */
 package org.apache.sling.launchpad.webapp.integrationtest;
 
-import org.apache.commons.io.IOUtils;
-import org.apache.sling.commons.testing.integration.HttpAnyMethod;
-
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.apache.commons.io.IOUtils;
+import org.apache.sling.commons.testing.integration.HttpAnyMethod;
 
 /*
  *    handler   ranking     identifier
@@ -36,14 +35,14 @@ import java.io.InputStream;
 public class SlingWebDavServletTest extends RenderingTestBase {
 
     private final String testDir = "/sling-test/" + getClass().getSimpleName() + System.currentTimeMillis();
-    
+
     // TODO there was previously no /default and the test passed, with a // before the testDir path
     // - need to clarify if this was by design
     private final String testDirUrl = HTTP_BASE_URL + "/dav/default" + testDir;
 
-    private final String HANDLER     = "test-io-handler-";
-    private final String HANDLER_1   = "test-io-handler-1";
-    private final String HANDLER_11  = "test-io-handler-11";
+    private final String HANDLER = "test-io-handler-";
+    private final String HANDLER_1 = "test-io-handler-1";
+    private final String HANDLER_11 = "test-io-handler-11";
     private final String HANDLER_111 = "test-io-handler-111";
 
     private static final String NUMMY_DATA = "dummy-data";
@@ -65,7 +64,7 @@ public class SlingWebDavServletTest extends RenderingTestBase {
 
     public void testServiceRunning() throws IOException {
         final String url = getHandlerUrl(HANDLER_1);
-        final HttpAnyMethod propfind = new HttpAnyMethod("PROPFIND",url);
+        final HttpAnyMethod propfind = new HttpAnyMethod("PROPFIND", url);
         int status = httpClient.executeMethod(propfind);
         assertEquals("PROPFIND " + url + " must return status 207", 207, status);
         final String content = propfind.getResponseBodyAsString();
@@ -86,7 +85,7 @@ public class SlingWebDavServletTest extends RenderingTestBase {
      * @throws IOException
      */
     private void checkHandler(String handlerName, String identifier) throws IOException {
-        final HttpAnyMethod propfind = new HttpAnyMethod("PROPFIND",handlerName);
+        final HttpAnyMethod propfind = new HttpAnyMethod("PROPFIND", handlerName);
         int status = httpClient.executeMethod(propfind);
         assertEquals("PROPFIND " + handlerName + " must return status 207", 207, status);
         final String content = propfind.getResponseBodyAsString();
@@ -103,12 +102,11 @@ public class SlingWebDavServletTest extends RenderingTestBase {
         }
     }
 
-    private String getHandlerUrl(String handlerName){
+    private String getHandlerUrl(String handlerName) {
         return testDirUrl + "/" + handlerName;
     }
 
-    private String getHandlerIdentifier(String handlerName){
+    private String getHandlerIdentifier(String handlerName) {
         return handlerName + "-";
     }
-
 }

@@ -18,12 +18,12 @@
  */
 package org.apache.sling.launchpad.webapp.integrationtest.jakarta;
 
-import static org.hamcrest.CoreMatchers.startsWith;
-import static org.hamcrest.MatcherAssert.assertThat;
-
 import java.io.IOException;
 
 import org.apache.sling.commons.testing.integration.HttpTestBase;
+
+import static org.hamcrest.CoreMatchers.startsWith;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * Verifies that Jakarta API usage on the server is working

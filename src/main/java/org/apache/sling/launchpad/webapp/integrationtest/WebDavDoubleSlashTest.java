@@ -18,9 +18,6 @@
  */
 package org.apache.sling.launchpad.webapp.integrationtest;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
 import java.io.IOException;
 import java.util.UUID;
 
@@ -31,27 +28,31 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
 /** Clarify the behavior of a double slash in a Sling WebDAV URL */
 public class WebDavDoubleSlashTest {
     private final HttpTest H = new HttpTest();
     String testPath;
     String toDelete;
-    
+
     @Before
     public void setup() throws Exception {
         H.setUp();
         testPath = "/test/" + getClass().getSimpleName() + "/" + UUID.randomUUID();
         toDelete = H.getTestClient().createNode(HttpTest.HTTP_BASE_URL + testPath, null);
     }
-    
+
     @After
     public void cleanup() throws Exception {
         H.tearDown();
         H.getTestClient().delete(toDelete);
     }
-    
+
     /** Do a PROPFIND on /dav, adding worskpace name after that as required by the Jackrabbit WebDAV modules */
-    private void assertPropfindStatus(final int expecetdStatus, final String workspace, final String path) throws IOException {
+    private void assertPropfindStatus(final int expecetdStatus, final String workspace, final String path)
+            throws IOException {
         final String webdavRoot = "/dav";
         final String url = HttpTest.HTTP_BASE_URL + webdavRoot + "/" + workspace + path;
         final HttpAnyMethod propfind = new HttpAnyMethod("PROPFIND", url);
@@ -59,11 +60,8 @@ public class WebDavDoubleSlashTest {
 
         if (expecetdStatus != status) {
             // print the response body in case of a test failure to help debugging
-            fail(
-                    "Status code " + expecetdStatus + " expected, got " + status + ".\n" +
-                    "Response body:\n" +
-                    propfind.getResponseBodyAsString()
-            );
+            fail("Status code " + expecetdStatus + " expected, got " + status + ".\n" + "Response body:\n"
+                    + propfind.getResponseBodyAsString());
         } else {
             // never fails, but there will be no assertion otherwise
             assertEquals("Status code", expecetdStatus, status);

@@ -24,10 +24,9 @@ import org.apache.sling.commons.testing.integration.HttpTestBase;
 
 /**
  * The <tt>XPathTest</tt> verifies that a simple Xpath transformation is successful
- * 
+ *
  */
 public class XPathTest extends HttpTestBase {
-
 
     public void testXPathEvaluationIsApplied() throws IOException {
 
@@ -35,5 +34,4 @@ public class XPathTest extends HttpTestBase {
 
         assertEquals(content, "JAXP");
     }
-
 }

@@ -1,18 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.launchpad.webapp.integrationtest;
 
@@ -30,22 +32,22 @@ public class CreateNodeTest extends HttpTestBase {
         final String url = HTTP_BASE_URL + "/CreateNodeTest_1_" + System.currentTimeMillis();
 
         // add some properties to the node
-        final Map<String,String> props = new HashMap<String,String>();
-        props.put("name1","value1");
-        props.put("name2","value2");
+        final Map<String, String> props = new HashMap<String, String>();
+        props.put("name1", "value1");
+        props.put("name2", "value2");
 
         // POST and get URL of created node
         String urlOfNewNode = null;
         try {
             urlOfNewNode = testClient.createNode(url, props);
-        } catch(IOException ioe) {
+        } catch (IOException ioe) {
             fail("createNode failed: " + ioe);
         }
 
         // get and check URL of created node
         final GetMethod get = new GetMethod(urlOfNewNode + DEFAULT_EXT);
         final int status = httpClient.executeMethod(get);
-        assertEquals(urlOfNewNode + " must be accessible after createNode",200,status);
+        assertEquals(urlOfNewNode + " must be accessible after createNode", 200, status);
         final String responseBodyStr = get.getResponseBodyAsString();
         assertTrue(responseBodyStr.contains("value1"));
         assertTrue(responseBodyStr.contains("value2"));
@@ -66,39 +68,39 @@ public class CreateNodeTest extends HttpTestBase {
         final String url = HTTP_BASE_URL + "/CreateNodeTest_2_" + System.currentTimeMillis();
 
         // add some properties to the node
-        final Map<String,String> props = new HashMap<String,String>();
-        props.put("name1","value1B");
-        props.put("name2","value2B");
+        final Map<String, String> props = new HashMap<String, String>();
+        props.put("name1", "value1B");
+        props.put("name2", "value2B");
 
         // POST and get URL of created node
         String urlOfNewNode = null;
         try {
             urlOfNewNode = testClient.createNode(url, props, null, true);
-        } catch(IOException ioe) {
+        } catch (IOException ioe) {
             fail("createNode failed: " + ioe);
         }
 
         // check node contents (not all renderings - those are tested above)
         final GetMethod get = new GetMethod(urlOfNewNode + DEFAULT_EXT);
         final int status = httpClient.executeMethod(get);
-        assertEquals(urlOfNewNode + " must be accessible after createNode",200,status);
+        assertEquals(urlOfNewNode + " must be accessible after createNode", 200, status);
         final String responseBodyStr = get.getResponseBodyAsString();
         assertTrue(responseBodyStr.contains("value1B"));
         assertTrue(responseBodyStr.contains("value2B"));
-   }
+    }
 
     public void testCreateNodeWithNodeType() throws IOException {
         final String url = HTTP_BASE_URL + "/CreateNodeTest_3_" + System.currentTimeMillis();
 
         // add node type param
-        final Map<String,String> props = new HashMap<String,String>();
-        props.put("jcr:primaryType","nt:folder");
+        final Map<String, String> props = new HashMap<String, String>();
+        props.put("jcr:primaryType", "nt:folder");
 
         // POST and get URL of created node
         String urlOfNewNode = null;
         try {
             urlOfNewNode = testClient.createNode(url, props);
-        } catch(IOException ioe) {
+        } catch (IOException ioe) {
             fail("createNode failed: " + ioe);
         }
 
@@ -110,14 +112,14 @@ public class CreateNodeTest extends HttpTestBase {
         final String url = HTTP_BASE_URL + "/CreateNodeTest_4_" + System.currentTimeMillis() + "/*";
 
         // add node type param
-        final Map<String,String> props = new HashMap<String,String>();
-        props.put("jcr:primaryType","nt:folder");
+        final Map<String, String> props = new HashMap<String, String>();
+        props.put("jcr:primaryType", "nt:folder");
 
         // POST and get URL of created node
         String urlOfNewNode = null;
         try {
             urlOfNewNode = testClient.createNode(url, props);
-        } catch(IOException ioe) {
+        } catch (IOException ioe) {
             fail("createNode failed: " + ioe);
         }
 
@@ -129,16 +131,16 @@ public class CreateNodeTest extends HttpTestBase {
         final String url = HTTP_BASE_URL + "/CreateNodeTest_5_" + System.currentTimeMillis();
 
         // add node type param
-        final Map<String,String> props = new HashMap<String,String>();
-        props.put("jcr:primaryType","nt:folder");
-        props.put("foo/jcr:primaryType","nt:folder");
-        props.put("foo/bar/jcr:primaryType","nt:folder");
+        final Map<String, String> props = new HashMap<String, String>();
+        props.put("jcr:primaryType", "nt:folder");
+        props.put("foo/jcr:primaryType", "nt:folder");
+        props.put("foo/bar/jcr:primaryType", "nt:folder");
 
         // POST and get URL of created node
         String urlOfNewNode = null;
         try {
             urlOfNewNode = testClient.createNode(url, props);
-        } catch(IOException ioe) {
+        } catch (IOException ioe) {
             fail("createNode failed: " + ioe);
         }
 
@@ -153,19 +155,19 @@ public class CreateNodeTest extends HttpTestBase {
         final String url = HTTP_BASE_URL + "/CreateNodeTest_6_" + System.currentTimeMillis();
 
         // add node type param
-        final Map<String,String> props = new HashMap<String,String>();
+        final Map<String, String> props = new HashMap<String, String>();
 
         // POST and get URL of created node
         String urlOfNewNode = null;
         try {
             urlOfNewNode = testClient.createNode(url, props);
-        } catch(IOException ioe) {
+        } catch (IOException ioe) {
             fail("createNode failed: " + ioe);
         }
 
         // get and check URL of created node
         final GetMethod get = new GetMethod(urlOfNewNode + DEFAULT_EXT);
         final int status = httpClient.executeMethod(get);
-        assertEquals(urlOfNewNode + " must be accessible after createNode",200,status);
+        assertEquals(urlOfNewNode + " must be accessible after createNode", 200, status);
     }
 }
