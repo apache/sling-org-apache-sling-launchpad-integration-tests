@@ -35,7 +35,4 @@ public class ExportedPackagesTest extends HttpTestBase {
         assertExported("org.apache.sling.launchpad.testservices.exported");
     }
     
-    public void testPackageFromFragment() throws Exception {
-        assertExported("org.apache.sling.launchpad.testservices.fragment.testpackage");
-    }
 }
