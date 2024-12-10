@@ -214,13 +214,13 @@
             <groupId>org.osgi</groupId>
             <artifactId>org.osgi.framework</artifactId>
             <version>1.9.0</version>
-            <scope>provided</scope>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.osgi</groupId>
             <artifactId>org.osgi.service.cm</artifactId>
             <version>1.6.1</version>
-            <scope>provided</scope>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
@@ -272,8 +272,8 @@
         <dependency>
             <groupId>org.apache.sling</groupId>
             <artifactId>org.apache.sling.junit.teleporter</artifactId>
-            <version>1.0.26</version>
-            <scope>provided</scope>
+            <version>1.0.20</version>
+            <scope>compile</scope>
             <exclusions>
                 <exclusion>
                     <groupId>commons-io</groupId>
@@ -291,7 +291,7 @@
             <groupId>org.apache.sling</groupId>
             <artifactId>org.apache.sling.launchpad.test-services</artifactId>
             <version>${project.version}</version>
-            <scope>provided</scope>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.sling</groupId>
@@ -315,13 +315,7 @@
             <groupId>org.codehaus.plexus</groupId>
             <artifactId>plexus-utils</artifactId>
             <version>3.0.9</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.ops4j.pax.tinybundles</groupId>
-            <artifactId>tinybundles</artifactId>
-            <version>3.0.0</version>
-            <scope>provided</scope>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 
