@@ -290,7 +290,7 @@
         <dependency>
             <groupId>org.apache.sling</groupId>
             <artifactId>org.apache.sling.launchpad.test-services</artifactId>
-            <version>${project.version}</version>
+            <version>13</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
