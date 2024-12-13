@@ -336,15 +336,22 @@
                     <skip>true</skip>
                 </configuration>
             </plugin>
+            <plugin>
+                <artifactId>maven-release-plugin</artifactId>
+                <configuration>
+                    <!-- don't use oddeven release policy for Sling Starter -->
+                    <projectVersionPolicyId>default</projectVersionPolicyId>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
     <profiles>
         <profile>
             <!--
-        SLING-1543, setup for running single integration tests with
-        -Dtest
-      -->
+                SLING-1543, setup for running single integration tests with
+                -Dtest
+            -->
             <id>runTests</id>
             <activation>
                 <property>
@@ -361,8 +368,8 @@
                             <testClassesDirectory>${project.build.outputDirectory}</testClassesDirectory>
                             <systemProperties>
                                 <!--
-                    Settings for running the integration against a specific Sling instance
-                -->
+                                    Settings for running the integration against a specific Sling instance
+                                -->
                                 <property>
                                     <name>launchpad.http.server.url</name>
                                     <value>http://${test.host}:${http.port}/${http.base.path}</value>
