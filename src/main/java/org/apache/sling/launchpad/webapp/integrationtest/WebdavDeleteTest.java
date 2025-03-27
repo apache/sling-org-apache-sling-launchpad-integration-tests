@@ -24,8 +24,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import junitx.framework.Assert;
 import org.apache.sling.commons.testing.integration.HttpTestBase;
+import org.junit.Assert;
 import org.junit.Test;
 
 public class WebdavDeleteTest extends HttpTestBase {
@@ -58,28 +58,24 @@ public class WebdavDeleteTest extends HttpTestBase {
     }
 
     @Test
-    public void testDelete() {
-        try {
-            testClient.delete(HTTP_BASE_URL + testDir + "/" + HANDLER_1);
-            testClient.delete(HTTP_BASE_URL + testDir + "/" + HANDLER_2);
-            testClient.delete(HTTP_BASE_URL + testDir + "/" + DEFAULT_HANDLER);
+    public void testDelete() throws IOException {
 
-            Assert.assertEquals(
-                    HttpServletResponse.SC_NOT_FOUND, testClient.get(HTTP_BASE_URL + testDir + "/" + HANDLER_1));
-            Assert.assertEquals(
-                    HttpServletResponse.SC_NOT_FOUND, testClient.get(HTTP_BASE_URL + testDir + "/" + HANDLER_2));
-            Assert.assertEquals(
-                    HttpServletResponse.SC_NOT_FOUND, testClient.get(HTTP_BASE_URL + testDir + "/" + DEFAULT_HANDLER));
+        testClient.delete(HTTP_BASE_URL + testDir + "/" + HANDLER_1);
+        testClient.delete(HTTP_BASE_URL + testDir + "/" + HANDLER_2);
+        testClient.delete(HTTP_BASE_URL + testDir + "/" + DEFAULT_HANDLER);
 
-            Assert.assertEquals(
-                    HttpServletResponse.SC_OK,
-                    testClient.get(HTTP_BASE_URL + testDir + "/" + HANDLER_1 + HANDLER_1_BKP + ".json"));
-            Assert.assertEquals(
-                    HttpServletResponse.SC_OK,
-                    testClient.get(HTTP_BASE_URL + testDir + "/" + HANDLER_2 + HANDLER_2_BKP + ".json"));
+        Assert.assertEquals(
+                HttpServletResponse.SC_NOT_FOUND, testClient.get(HTTP_BASE_URL + testDir + "/" + HANDLER_1));
+        Assert.assertEquals(
+                HttpServletResponse.SC_NOT_FOUND, testClient.get(HTTP_BASE_URL + testDir + "/" + HANDLER_2));
+        Assert.assertEquals(
+                HttpServletResponse.SC_NOT_FOUND, testClient.get(HTTP_BASE_URL + testDir + "/" + DEFAULT_HANDLER));
 
-        } catch (IOException e) {
-            Assert.fail(e);
-        }
+        Assert.assertEquals(
+                HttpServletResponse.SC_OK,
+                testClient.get(HTTP_BASE_URL + testDir + "/" + HANDLER_1 + HANDLER_1_BKP + ".json"));
+        Assert.assertEquals(
+                HttpServletResponse.SC_OK,
+                testClient.get(HTTP_BASE_URL + testDir + "/" + HANDLER_2 + HANDLER_2_BKP + ".json"));
     }
 }
