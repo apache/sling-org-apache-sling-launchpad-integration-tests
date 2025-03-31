@@ -18,16 +18,15 @@
  */
 package org.apache.sling.launchpad.webapp.integrationtest.servlets.post;
 
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
-
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.util.Arrays;
 import java.util.regex.Pattern;
 
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonReader;
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.sling.api.request.header.MediaRangeList;
 import org.apache.sling.commons.testing.integration.HttpTestBase;

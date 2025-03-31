@@ -18,10 +18,9 @@
  */
 package org.apache.sling.launchpad.webapp.integrationtest;
 
-import javax.json.JsonObject;
-
 import java.io.IOException;
 
+import jakarta.json.JsonObject;
 import org.apache.sling.commons.testing.integration.HttpTestBase;
 import org.apache.sling.launchpad.webapp.integrationtest.util.JsonUtil;
 

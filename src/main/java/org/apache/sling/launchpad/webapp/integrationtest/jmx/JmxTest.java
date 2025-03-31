@@ -18,12 +18,11 @@
  */
 package org.apache.sling.launchpad.webapp.integrationtest.jmx;
 
-import javax.json.JsonValue;
-
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import jakarta.json.JsonValue;
 import org.apache.sling.commons.testing.integration.HttpTestBase;
 import org.apache.sling.launchpad.webapp.integrationtest.util.JsonUtil;
 

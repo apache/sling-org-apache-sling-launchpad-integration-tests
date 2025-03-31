@@ -1,8 +1,8 @@
-<%@page import="javax.json.JsonWriter"%>
-<%@page import="javax.json.JsonObject"%>
-<%@page import="javax.json.JsonObjectBuilder"%>
-<%@page import="javax.json.JsonBuilderFactory"%>
-<%@page import="javax.json.Json"%>
+<%@page import="jakarta.json.JsonWriter"%>
+<%@page import="jakarta.json.JsonObject"%>
+<%@page import="jakarta.json.JsonObjectBuilder"%>
+<%@page import="jakarta.json.JsonBuilderFactory"%>
+<%@page import="jakarta.json.Json"%>
 <%@page import="java.util.Collections"%>
 <%@page import="org.apache.sling.api.SlingConstants"%>
 <%

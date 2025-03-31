@@ -18,8 +18,6 @@
  */
 package org.apache.sling.launchpad.webapp.integrationtest.installer;
 
-import javax.json.JsonException;
-import javax.json.JsonObject;
 import javax.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
@@ -28,6 +26,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import jakarta.json.JsonException;
+import jakarta.json.JsonObject;
 import junit.framework.AssertionFailedError;
 import org.apache.sling.commons.testing.integration.HttpTest;
 import org.apache.sling.launchpad.webapp.integrationtest.util.JsonUtil;
@@ -35,7 +35,7 @@ import org.apache.sling.testing.tools.sling.TimeoutsProvider;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.ops4j.pax.tinybundles.core.TinyBundles;
+import org.ops4j.pax.tinybundles.TinyBundles;
 import org.osgi.framework.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,8 +81,8 @@ public class InstallManyBundlesTest {
 
     private InputStream getBundleStream(String bsn, String version) {
         return TinyBundles.bundle()
-                .set(Constants.BUNDLE_VERSION, version)
-                .set(Constants.BUNDLE_SYMBOLICNAME, bsn)
+                .setHeader(Constants.BUNDLE_VERSION, version)
+                .setHeader(Constants.BUNDLE_SYMBOLICNAME, bsn)
                 .build();
     }
 

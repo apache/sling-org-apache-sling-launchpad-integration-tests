@@ -18,9 +18,6 @@
  */
 package org.apache.sling.launchpad.webapp.integrationtest.servlets.post;
 
-import javax.json.JsonArray;
-import javax.json.JsonException;
-import javax.json.JsonObject;
 import javax.servlet.http.HttpServletResponse;
 
 import java.io.File;
@@ -38,6 +35,9 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
+import jakarta.json.JsonArray;
+import jakarta.json.JsonException;
+import jakarta.json.JsonObject;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.sling.commons.testing.integration.HttpTestBase;

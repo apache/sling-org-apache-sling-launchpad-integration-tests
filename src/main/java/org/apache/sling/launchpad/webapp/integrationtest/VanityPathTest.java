@@ -18,14 +18,13 @@
  */
 package org.apache.sling.launchpad.webapp.integrationtest;
 
-import javax.json.JsonException;
-
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import jakarta.json.JsonException;
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.sling.commons.testing.integration.HttpTestBase;

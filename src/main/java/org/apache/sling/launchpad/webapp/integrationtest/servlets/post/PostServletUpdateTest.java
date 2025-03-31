@@ -18,9 +18,6 @@
  */
 package org.apache.sling.launchpad.webapp.integrationtest.servlets.post;
 
-import javax.json.JsonArray;
-import javax.json.JsonException;
-import javax.json.JsonObject;
 import javax.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
@@ -29,6 +26,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import jakarta.json.JsonArray;
+import jakarta.json.JsonException;
+import jakarta.json.JsonObject;
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.sling.launchpad.webapp.integrationtest.AuthenticatedTestUtil;
 import org.apache.sling.launchpad.webapp.integrationtest.util.JsonUtil;

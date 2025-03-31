@@ -18,7 +18,6 @@
  */
 package org.apache.sling.launchpad.webapp.integrationtest.servlets.post;
 
-import javax.json.JsonObject;
 import javax.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
@@ -27,6 +26,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import jakarta.json.JsonObject;
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.sling.commons.testing.integration.HttpTestBase;
 import org.apache.sling.launchpad.webapp.integrationtest.util.JsonUtil;
