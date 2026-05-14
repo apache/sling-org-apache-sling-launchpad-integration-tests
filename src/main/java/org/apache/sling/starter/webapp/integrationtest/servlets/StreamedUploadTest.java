@@ -37,10 +37,6 @@ public class StreamedUploadTest extends HttpTestBase {
     private static final String STREAM_MODE = "stream";
 
     public void testStreamedUploadWithJavaxPart() throws IOException {
-        // enable once SLING-13083 is fixed
-        if (true) {
-            return;
-        }
         final String url = HTTP_BASE_URL + SERVLET_PATH;
 
         // Create a test file to upload
