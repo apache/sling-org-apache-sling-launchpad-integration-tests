@@ -88,7 +88,7 @@ public class HeadServletTest {
         final int status = H.getHttpClient().executeMethod(head);
         assertEquals(200, status);
         assertNull("Expecting null body", head.getResponseBody());
-        assertCommonHeaders(head, "text/html");
+        assertCommonHeaders(head, "^text\\/html(;\\s*charset=.*)?$");
     }
 
     @Test
